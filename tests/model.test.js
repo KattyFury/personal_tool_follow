@@ -33,7 +33,8 @@ test('cap is enforced before another attempt is reserved', () => {
 test('settings reject invalid limits and inverted timing', () => {
   for (const dailyLimit of [0, -1, 1.5, NaN, Infinity]) assert.throws(() => validSettings('binance', { dailyLimit }));
   assert.throws(() => validSettings('binance', { minDelay: 30, maxDelay: 10 }));
-  assert.throws(() => validSettings('x', { restMin: 12, restMax: 1 }));
+  const x = validSettings('x', { restMin: 12, restMax: 1 });
+  assert.equal('restMin' in x || 'restMax' in x, false);
   assert.equal(validSettings('x', { whitelist: '@alice, ALICE, bob, <img>' }).whitelist, 'alice, bob');
 });
 test('only X and Square routes are eligible', () => {

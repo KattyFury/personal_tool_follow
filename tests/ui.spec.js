@@ -44,6 +44,14 @@ test('vertical layout supports settings and start/stop', async ({ page }) => {
   await page.getByRole('button', { name: 'X', exact: true }).click();
   await expect(page.locator('#dailyLimit')).toHaveValue('400');
   await expect(page.locator('#personal')).toBeChecked();
+  await expect(page.locator('#restMin, #restMax')).toHaveCount(0);
+  expect((await page.locator('#whitelist').boundingBox()).height).toBeGreaterThanOrEqual(48);
+  await page.locator('#whitelist').fill('alice, bob');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Binance', exact: true }).click();
+  await expect(page.locator('#whitelist')).toBeHidden();
+  await page.getByRole('button', { name: 'X', exact: true }).click();
+  await expect(page.locator('#whitelist')).toHaveValue('alice, bob');
   expect(errors).toEqual([]);
 });
 

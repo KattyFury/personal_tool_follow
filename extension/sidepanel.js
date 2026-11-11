@@ -11,15 +11,15 @@ async function ask(message) {
 }
 function renderForm() {
   const values = settings[selected];
-  for (const key of ['dailyLimit', 'minDelay', 'maxDelay', 'mode', 'restMin', 'restMax', 'whitelist']) if (values[key] !== undefined) $(key).value = values[key];
+  for (const key of ['dailyLimit', 'minDelay', 'maxDelay', 'mode', 'whitelist']) if (values[key] !== undefined) $(key).value = values[key];
   $('personal').checked = settings.x.personal;
-  $('x-settings').hidden = $('x-rest').hidden = selected !== 'x';
+  $('x-settings').hidden = $('x-whitelist').hidden = selected !== 'x';
   for (const p of ['x', 'binance']) $('settings-' + p).setAttribute('aria-pressed', String(p === selected));
   $('save-state').textContent = 'Saved'; $('settings-error').textContent = ''; dirty = false;
 }
 function collect() {
   const values = { ...settings[selected] };
-  for (const key of ['dailyLimit', 'minDelay', 'maxDelay', ...(selected === 'x' ? ['restMin', 'restMax'] : [])]) values[key] = Number($(key).value);
+  for (const key of ['dailyLimit', 'minDelay', 'maxDelay']) values[key] = Number($(key).value);
   if (selected === 'x') { values.mode = $('mode').value; values.personal = $('personal').checked; values.whitelist = $('whitelist').value; }
   return validSettings(selected, values);
 }

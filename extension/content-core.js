@@ -21,7 +21,7 @@
         if (document.querySelector('iframe[src*="captcha"], [data-testid="ocfEnterTextTextInput"], #login-dialog')) throw Error('Login or verification required.');
       }
       async function execute(run) {
-        let burst = 0, burstLimit = random(20, 30), misses = 0, capReached = false;
+        let misses = 0, capReached = false;
         const seen = new Set();
         const report = (status, nextAt = null) => ask({ type: 'status', platform: adapter.id, token: run.token, running: true, status, nextAt });
         const ctx = {
@@ -73,13 +73,9 @@
             const outcome = await adapter.step(ctx);
             if (outcome === 'acted') {
               if (capReached) throw Error('Daily cap reached.');
-              misses = 0; burst++;
-              let delay = random(run.settings.minDelay * 1000, run.settings.maxDelay * 1000);
-              let label = 'Waiting for the next action';
-              if (adapter.id === 'x' && run.settings.mode !== 'follow' && burst >= burstLimit) {
-                delay = random(run.settings.restMin * 60000, run.settings.restMax * 60000);
-                burst = 0; burstLimit = random(20, 30); label = 'Resting between batches';
-              }
+              misses = 0;
+              const delay = random(run.settings.minDelay * 1000, run.settings.maxDelay * 1000);
+              const label = 'Waiting for the next action';
               await report(label, Date.now() + delay); await ctx.wait(delay);
             } else {
               if (outcome === 'empty' && ++misses >= 12) throw Error('No more eligible accounts found. Check the feed before restarting.');

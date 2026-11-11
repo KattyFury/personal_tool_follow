@@ -17,7 +17,7 @@
           <div id="x-settings"><label class="toggle" title="Follow only SF > 10. Preserve SF > 10 when unfollowing; skip missing SF. Requires Kaito."><input type="checkbox" id="personal">SF &gt; 10 · Kaito</label></div>
           <label>Daily cap<input id="dailyLimit" type="number" min="1" max="10000" step="1" required></label>
           <fieldset><legend>Delay · sec</legend><div class="range"><label><span class="sr-only">Minimum delay</span><input id="minDelay" type="number" min="1" max="86400" required></label><span>–</span><label><span class="sr-only">Maximum delay</span><input id="maxDelay" type="number" min="1" max="86400" required></label></div></fieldset>
-          <div id="x-rest"><fieldset><legend title="Rest after 20–30 mass-follow or unfollow actions">Rest · min</legend><div class="range"><label><span class="sr-only">Minimum rest</span><input id="restMin" type="number" min="1" max="1440"></label><span>–</span><label><span class="sr-only">Maximum rest</span><input id="restMax" type="number" min="1" max="1440"></label></div></fieldset><label class="whitelist-field">Whitelist<textarea id="whitelist" rows="1" spellcheck="false" placeholder="@handle, @handle"></textarea></label></div>
+          <label id="x-whitelist" class="whitelist-field">Whitelist<textarea id="whitelist" rows="2" spellcheck="false" placeholder="@handle, @handle"></textarea></label>
           <p id="settings-error" class="error" role="alert"></p>
           
         </form>
@@ -40,7 +40,7 @@
       </section>
 
     </div>
-    <footer><span>Keep source tabs open.</span><span class="version">0.3.0</span></footer>
+    <footer><span>Keep source tabs open.</span><span class="version">0.3.1</span></footer>
   </main>
   <script type="module" src="sidepanel.js"></script>
 </body>

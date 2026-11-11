@@ -1,5 +1,5 @@
 export const defaults = {
-  x: { dailyLimit: 400, minDelay: 60, maxDelay: 90, restMin: 5, restMax: 10, mode: 'follow', personal: true, whitelist: "arc, tempo, ritualnet, seismicsys, base, megaeth, metamask, kastxyz, degentokenbase, 01exchange, decibeltrade, linera_io, somnia_network, relayprotocol, jumperapp, prismaxai, axisrobotics, psdnai, nansen_ai, ethos_network, wallchain, forteprotocol, upshot_cards, megapot, spektergames, pixiechess, integra_layer, getoro_xyz, farcaster_xyz, bluesky, stormrae_ai, concretexyz, ezwalletapp, kucoincom, bybit_official, binanceangels, riverdotinc, river4fun, binance, bitget, arcium, bybitafrica, binancevip" },
+  x: { dailyLimit: 400, minDelay: 60, maxDelay: 90, mode: 'follow', personal: true, whitelist: "arc, tempo, ritualnet, seismicsys, base, megaeth, metamask, kastxyz, degentokenbase, 01exchange, decibeltrade, linera_io, somnia_network, relayprotocol, jumperapp, prismaxai, axisrobotics, psdnai, nansen_ai, ethos_network, wallchain, forteprotocol, upshot_cards, megapot, spektergames, pixiechess, integra_layer, getoro_xyz, farcaster_xyz, bluesky, stormrae_ai, concretexyz, ezwalletapp, kucoincom, bybit_official, binanceangels, riverdotinc, river4fun, binance, bitget, arcium, bybitafrica, binancevip" },
   binance: { dailyLimit: 500, minDelay: 10, maxDelay: 30 }
 };
 export const dayKey = (date = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
@@ -11,7 +11,7 @@ export function validSettings(platform, value) {
   if (result.minDelay > result.maxDelay || result.maxDelay > 86400) throw Error('Delay range is invalid.');
   if (platform === 'x') {
     if (!['follow', 'massfollow', 'unfollow', 'unfollow_topdown'].includes(result.mode)) throw Error('Choose an X mode.');
-    if (![result.restMin, result.restMax].every(n => Number.isFinite(n) && n >= 1 && n <= 1440) || result.restMin > result.restMax) throw Error('Rest range is invalid.');
+    delete result.restMin; delete result.restMax;
     result.personal = !!result.personal;
     result.whitelist = [...new Set(String(result.whitelist).split(/[\s,]+/).map(s => s.replace(/^@/, '').toLowerCase()).filter(s => /^[a-z0-9_]{1,15}$/.test(s)))].join(', ');
   }

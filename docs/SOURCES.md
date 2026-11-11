@@ -7,7 +7,7 @@ Copied from the user's repository, with authorization in this chat:
 - https://github.com/KattyFury/tool_personal_xmanager
 - Source commit: `69b8ad3fbea609c0006441c8c874e28e739aafba`
 - Both original userscripts are preserved unchanged in `reference/xmanager/` for comparison. These copies are not executed by the extension.
-- `extension/content-x.js` adapts the original UserCell and tweet selectors, Kaito score parsing, SF > 10 threshold, verified badge detection, hover-card targeting, four modes, whitelist, scrolling directions, and burst-rest behavior. The Personal version's latest executable code and HANDOFF take precedence over older conflicting MEMORY descriptions.
+- `extension/content-x.js` adapts the original UserCell and tweet selectors, Kaito score parsing, SF > 10 threshold, verified badge detection, hover-card targeting, four modes, whitelist, scrolling directions. Batch rests were removed at the user’s request in 0.3.1. The Personal version's latest executable code and HANDOFF take precedence over older conflicting MEMORY descriptions.
 - Full original default whitelist is retained. Whitelist matching is exact instead of prefix matching.
 - Standard mode comes from the non-Personal script: follow without SF, preserve verified accounts that follow you when unfollowing.
 

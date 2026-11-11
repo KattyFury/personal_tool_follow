@@ -20,7 +20,7 @@ Adapted from [your X Manager](https://github.com/KattyFury/tool_personal_xmanage
 - **Unfollow:** open your following list; choose top to bottom or bottom to top.
 - Personal filter enabled by default: follow only SF > 10; unfollow SF ≤ 10; skip missing SF and preserve the whitelist. Requires your Kaito badge extension.
 - Personal filter off: no SF requirement for follows; unfollow preserves the whitelist and verified accounts that follow you.
-- Original defaults retained: 400 attempts/day, 60–90 seconds between actions, 5–10 minute rests after 20–30 mass-follow/unfollow actions. Full source whitelist retained.
+- Defaults: 400 attempts/day and 60–90 seconds between actions. Batch rests have been removed; the Whitelist field uses the freed space. Full source whitelist retained.
 
 ## Binance Square
 
