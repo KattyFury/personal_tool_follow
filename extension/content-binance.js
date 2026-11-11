@@ -42,11 +42,15 @@
     return null;
   }
   let scrollNext = false, hoverFailures = 0;
+  // Binance hides/limits profile hover cards when the tab is narrow (seen on a PC with the side panel open).
+  const NARROW = 600;
+  const widthHint = () => innerWidth < NARROW ? ` The Binance tab is only ${innerWidth}px wide: hover cards may not appear. Widen the Chrome window (or close other side panels) and start again.` : ' If the Binance tab is zoomed, press Ctrl+0 there and start again.';
   PersonalFollow.register({
     id: 'binance', allowed,
     async prepare() {
       scrollNext = false; hoverFailures = 0;
       if (!allowed()) throw Error('Open the Binance Square feed, not a profile or post.');
+      if (innerWidth < 480) throw Error(`The Binance tab is only ${innerWidth}px wide, too narrow for profile hover cards. Widen the Chrome window and start again.`);
     },
     async step(ctx) {
       if (scrollNext) { ctx.check(); window.scrollBy({ top: Math.max(300, Math.round(window.innerHeight * 0.6)) }); scrollNext = false; await ctx.wait(1000); }
@@ -78,8 +82,8 @@
           }
           if (!target) {
             hoverFailures++;
-            if (hoverFailures >= 3) throw Error('Cannot identify profile hover cards for 3 consecutive accounts after retries. Check whether hovering a name opens a profile card; the hover-card HTML may need updating. If the Binance tab is zoomed, press Ctrl+0 there and start again.');
-            await ctx.report('Skipped ' + account + ': no matching hover card after 3 tries.');
+            if (hoverFailures >= 3) throw Error('Cannot identify profile hover cards for 3 consecutive accounts after retries. Check whether hovering a name opens a profile card; the hover-card HTML may need updating.' + widthHint());
+            await ctx.report('Skipped ' + account + ': no matching hover card after 3 tries.' + (innerWidth < NARROW ? ` Tab is narrow (${innerWidth}px), widen the window.` : ''));
             return 'skipped';
           }
           hoverFailures = 0;
