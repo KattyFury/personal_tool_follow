@@ -14,9 +14,11 @@ function renderForm() {
   for (const key of ['dailyLimit', 'minDelay', 'maxDelay', 'mode', 'whitelist']) if (values[key] !== undefined) $(key).value = values[key];
   $('personal').checked = settings.x.personal;
   $('x-settings').hidden = $('x-whitelist').hidden = selected !== 'x';
+  $('binance-note').hidden = selected === 'x';
   for (const p of ['x', 'binance']) $('settings-' + p).setAttribute('aria-pressed', String(p === selected));
-  $('save-state').textContent = 'Saved'; $('settings-error').textContent = ''; dirty = false;
+  setSaved(true); $('settings-error').textContent = ''; dirty = false;
 }
+function setSaved(saved) { $('save-state').textContent = saved ? 'Saved' : 'Unsaved'; $('save-state').classList.toggle('unsaved', !saved); }
 function collect() {
   const values = { ...settings[selected] };
   for (const key of ['dailyLimit', 'minDelay', 'maxDelay']) values[key] = Number($(key).value);
@@ -26,12 +28,15 @@ function collect() {
 async function save() {
   const values = collect();
   await ask({ type: 'save', platform: selected, settings: values });
-  settings[selected] = values; dirty = false; $('save-state').textContent = 'Saved'; $('settings-error').textContent = '';
+  settings[selected] = values; dirty = false; setSaved(true); $('settings-error').textContent = '';
 }
 function renderPlatform(p) {
   const run = snapshot.runs[p], running = !!run?.running;
   const count = snapshot.counts[p]?.day === snapshot.day ? snapshot.counts[p] : { attempts: 0, confirmed: 0 };
-  $(p + '-count').textContent = `${count.attempts} / ${running ? run.settings.dailyLimit : settings[p].dailyLimit}`;
+  const limit = running ? run.settings.dailyLimit : settings[p].dailyLimit;
+  $(p + '-count').textContent = `${count.attempts} / ${limit}`;
+  $(p + '-meter').style.width = `${Math.min(100, (count.attempts / limit) * 100 || 0)}%`;
+  document.querySelector(`.card[data-platform="${p}"]`).classList.toggle('is-running', running);
   $(p + '-confirmed').textContent = count.confirmed || 0;
   const tab = $(p + '-tab'), chosen = tab.value;
   const candidates = snapshot.tabs.filter(t => t.platform === p);
@@ -56,6 +61,8 @@ async function refresh() {
     snapshot = await ask({ type: 'snapshot' });
     settings = snapshot.settings;
     for (const p of ['x', 'binance']) renderPlatform(p);
+    $('mode').value = snapshot.runs.x?.running ? snapshot.runs.x.settings.mode : settings.x.mode;
+    $('mode').disabled = !!snapshot.runs.x?.running;
     $('x-mode-label').textContent = modes[snapshot.runs.x?.running ? snapshot.runs.x.settings.mode : settings.x.mode];
   } catch (error) { $('settings-error').textContent = error.message; }
 }
@@ -76,7 +83,11 @@ for (const p of ['x', 'binance']) {
     try { await ask({ type: 'stop', platform: p }); delete uiErrors[p]; await refresh(); } catch (error) { uiErrors[p] = error.message; $(p + '-status').textContent = error.message; }
   });
 }
-$('settings-form').addEventListener('input', () => { dirty = true; $('save-state').textContent = 'Unsaved'; });
+$('settings-form').addEventListener('input', () => { dirty = true; setSaved(false); });
+$('mode').addEventListener('change', async () => {
+  try { const values = validSettings('x', { ...settings.x, mode: $('mode').value }); await ask({ type: 'save', platform: 'x', settings: values }); settings.x = values; await refresh(); }
+  catch (error) { uiErrors.x = error.message; $('x-status').textContent = error.message; }
+});
 $('settings-form').addEventListener('submit', async event => { event.preventDefault(); try { await save(); await refresh(); } catch (error) { $('settings-error').textContent = error.message; } });
 await refresh(); renderForm();
 setInterval(refresh, 1500);

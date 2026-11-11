@@ -1,13 +1,13 @@
 # Handoff — Personal Follow
 
-Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.3.2.
+Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.4.0.
 
 ## Locations
 
-- Private repo: https://github.com/KattyFury/tool_personal_follow
-- User working copy: D:\Files\Claude\tool_personal_follow
-- Chrome Load unpacked folder: D:\Files\Claude\tool_personal_follow\extension
-- A second development copy exists under C:\Users\Dell\Documents\Codex\2026-11-11\i\work\tool_personal_follow. Keep copies synchronized through Git; check for local edits first.
+- Private repo: https://github.com/KattyFury/personal_tool_follow
+- User working copy: D:\Files\Claude\personal_tool_follow
+- Chrome Load unpacked folder: D:\Files\Claude\personal_tool_follow\extension
+- A second development copy exists under C:\Users\Dell\Documents\Codex\2026-11-11\i\work\personal_tool_follow. Keep copies synchronized through Git; check for local edits first.
 
 ## User requirements — follow these
 
@@ -56,6 +56,8 @@ node scripts/check-binance-hover.js
 Requires installed Google Chrome for browser checks. Last relevant runs: 24 unit/DOM/background tests passed for 0.3.1; 6 UI tests passed on palette update, including exact yellow color and layout sizes. Browser hover proof and integrated CSS-hover-only fixture passed when introduced in 0.3.0. Fixtures use isolated Chrome and no live accounts.
 
 ## Recent commits
+
+- 0.4.0: side panel redesign — black platform cards, yellow counters + progress meter, running card outlined in yellow, X/Binance segmented settings, Whitelist with inline SF>10 switch, tab picker + Stop/Start on one row, X Action change saves immediately.
 
 - 13237ef: correct black-yellow-white palette (0.3.2)
 - 31bb128: remove X rests, expand Whitelist (0.3.1)
