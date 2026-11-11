@@ -24,7 +24,7 @@ Adapted from [your X Manager](https://github.com/KattyFury/tool_personal_xmanage
 
 ## Binance Square
 
-Open the Square feed. The runner hovers a visible author name, waits for that author’s profile card, clicks Follow inside that card, waits the configured delay, then scrolls to the next accounts. Already-followed accounts are skipped. The runner stops if the hover card cannot be identified, the page changes, or an outcome is unclear.
+Open the Square feed. The runner hovers a visible author name, waits for that author’s profile card, clicks Follow inside that card, waits the configured delay, then scrolls to the next accounts. Already-followed accounts are skipped. A missing hover card is retried three times (including the avatar/name wrapper), then that account is skipped without reserving a Follow attempt. Three consecutive accounts with missing cards stop the runner so it cannot scroll indefinitely. Page changes or unclear action outcomes still stop immediately.
 
 Defaults: **500 attempts/day**, random **10–30 seconds** between follows. The cap is your configured maximum, not an official Binance limit. Current live feed markup still needs validation; the adapter may find no eligible buttons if Binance changes its layout.
 

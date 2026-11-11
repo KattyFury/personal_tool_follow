@@ -49,11 +49,26 @@ test('Binance waits for a delayed profile card instead of clicking a feed button
   assert.equal(await value.step(context({ wait: async ms => { if (ms === 250 && ++waits === 3) card = showProfile(dom); }, action: async button => assert.equal(button.closest('.bn-bubble'), card) })), 'acted');
   assert.equal(waits, 3); dom.window.close();
 });
-test('Binance stops when no hover card appears and ignores unrelated Follow buttons', async () => {
+test('Binance retries and skips a missing hover card without clicking unrelated buttons', async () => {
   const { dom, value } = await adapter('content-binance.js', '<main>' + binanceHeader + '<button>Follow</button></main>', binanceURL);
   let scrolled = false; dom.window.scrollBy = () => { scrolled = true; };
-  await assert.rejects(value.step(context()), /hover card did not appear/);
+  let waits = 0; assert.equal(await value.step(context({ wait: async ms => { if (ms === 250) waits++; } })), 'skipped'); assert.equal(waits, 72);
   assert.equal(scrolled, false); dom.window.close();
+});
+test('Binance recovers when hovering the avatar wrapper on retry opens the card', async () => {
+  const { dom, value } = await adapter('content-binance.js', binanceHeader, binanceURL);
+  let count = 0, target;
+  const avatar = dom.window.document.querySelector('.avatar-name-container');
+  avatar.addEventListener('mouseover', event => { count++; if (event.target === avatar) target = showProfile(dom); });
+  assert.equal(await value.step(context({ action: async button => assert.equal(button.closest('.bn-bubble'), target) })), 'acted');
+  assert.equal(count, 2); dom.window.close();
+});
+test('Binance stops after three consecutive missing cards instead of scrolling forever', async () => {
+  const headers = ['alice', 'bob', 'carol'].map(name => binanceHeader.replaceAll('killiankillua', name)).join('');
+  const { dom, value } = await adapter('content-binance.js', headers, binanceURL);
+  const ctx = context();
+  assert.equal(await value.step(ctx), 'skipped'); assert.equal(await value.step(ctx), 'skipped');
+  await assert.rejects(value.step(ctx), /3 consecutive accounts/); dom.window.close();
 });
 test('Binance skips already-followed users in hover cards', async () => {
   const { dom, value } = await adapter('content-binance.js', binanceHeader, binanceURL);

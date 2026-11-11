@@ -30,11 +30,11 @@
     }
     return null;
   }
-  let scrollNext = false;
+  let scrollNext = false, hoverFailures = 0;
   PersonalFollow.register({
     id: 'binance', allowed,
     async prepare() {
-      scrollNext = false;
+      scrollNext = false; hoverFailures = 0;
       if (!allowed()) throw Error('Open the Binance Square feed, not a profile or post.');
     },
     async step(ctx) {
@@ -49,12 +49,28 @@
         ctx.check(); ctx.seen.add(account);
         link.scrollIntoView({ block: 'center', behavior: 'instant' });
         await ctx.wait(500);
-        await ctx.report('Hovering ' + (link.textContent.trim() || account) + '…');
-        hover(link, true);
+        let hoverTarget = link;
         try {
           let target = null;
-          for (let i = 0; i < 24; i++) { await ctx.wait(250); target = findProfileCard(account, link); if (target) break; }
-          if (!target) throw Error('Profile hover card did not appear for ' + account + '. Hover that name manually and check the card markup.');
+          for (let attempt = 0; attempt < 3 && !target && link.isConnected; attempt++) {
+            if (attempt) {
+              hover(hoverTarget, false);
+              await ctx.wait(750);
+              link.scrollIntoView({ block: 'center', behavior: 'instant' });
+              await ctx.wait(500);
+            }
+            hoverTarget = attempt === 1 ? link.closest('.avatar-name-container') || link : link;
+            await ctx.report('Hovering ' + account + ' (' + (attempt + 1) + '/3)…');
+            ctx.check(); hover(hoverTarget, true);
+            for (let i = 0; i < 24; i++) { await ctx.wait(250); target = findProfileCard(account, link); if (target) break; }
+          }
+          if (!target) {
+            hoverFailures++;
+            if (hoverFailures >= 3) throw Error('Cannot identify profile hover cards for 3 consecutive accounts after retries. Check whether hovering a name opens a profile card; the hover-card HTML may need updating.');
+            await ctx.report('Skipped ' + account + ': no matching hover card after 3 tries.');
+            return 'skipped';
+          }
+          hoverFailures = 0;
           if (target.following) { await ctx.report('Already following ' + account); return 'skipped'; }
           ctx.check();
           await ctx.report('Following ' + account + ' from the hover card…');
@@ -64,7 +80,7 @@
           });
           scrollNext = true;
           return 'acted';
-        } finally { hover(link, false); }
+        } finally { hover(hoverTarget, false); }
       }
       ctx.check(); window.scrollBy({ top: Math.max(400, Math.round(window.innerHeight * 0.7)) });
       return 'empty';
