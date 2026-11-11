@@ -4,12 +4,55 @@
   "version": "0.2.2",
   "minimum_chrome_version": "114",
   "description": "One screen for your X and Binance Square follow tools.",
-  "permissions": ["storage", "tabs", "sidePanel"],
-  "side_panel": { "default_path": "sidepanel.html" },
-  "background": { "service_worker": "background.js", "type": "module" },
-  "action": { "default_title": "Open Personal Follow sidebar" },
+  "permissions": [
+    "storage",
+    "tabs",
+    "sidePanel"
+  ],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open Personal Follow sidebar",
+    "default_icon": {
+      "16": "icons/people-16.png",
+      "32": "icons/people-32.png",
+      "48": "icons/people-48.png",
+      "128": "icons/people-128.png"
+    }
+  },
   "content_scripts": [
-    { "matches": ["https://x.com/*", "https://twitter.com/*"], "js": ["content-core.js", "content-x.js"], "run_at": "document_idle" },
-    { "matches": ["https://www.binance.com/*/square*", "https://www.binance.com/square*"], "js": ["content-core.js", "content-binance.js"], "run_at": "document_idle" }
-  ]
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://twitter.com/*"
+      ],
+      "js": [
+        "content-core.js",
+        "content-x.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.binance.com/*/square*",
+        "https://www.binance.com/square*"
+      ],
+      "js": [
+        "content-core.js",
+        "content-binance.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/people-16.png",
+    "32": "icons/people-32.png",
+    "48": "icons/people-48.png",
+    "128": "icons/people-128.png"
+  }
 }
