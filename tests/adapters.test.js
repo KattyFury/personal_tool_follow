@@ -49,6 +49,31 @@ test('Binance waits for a delayed profile card instead of clicking a feed button
   assert.equal(await value.step(context({ wait: async ms => { if (ms === 250 && ++waits === 3) card = showProfile(dom); }, action: async button => assert.equal(button.closest('.bn-bubble'), card) })), 'acted');
   assert.equal(waits, 3); dom.window.close();
 });
+test('Binance recognizes a linkless profile card by exact display name and handle', async () => {
+  const { dom, value } = await adapter('content-binance.js', binanceHeader, binanceURL);
+  let card;
+  dom.window.document.querySelector('.nick').addEventListener('mouseover', () => {
+    card = dom.window.document.createElement('div'); card.style.position = 'absolute';
+    card.innerHTML = '<button>Follow</button><div>Killian Killua</div><div>@killiankillua</div><div>66 Following</div><div>12 Followers</div>';
+    dom.window.document.body.append(card);
+  }, { once: true });
+  assert.equal(await value.step(context({ action: async (button, verify) => { assert.equal(button.parentElement, card); button.textContent = 'Following'; assert.equal(verify(), true); } })), 'acted'); dom.window.close();
+});
+test('Binance rejects a linkless card with the same name but a different handle', async () => {
+  const { dom, value } = await adapter('content-binance.js', binanceHeader + '<div class="bn-bubble"><button>Follow</button><div>Killian Killua</div><div>@someone_else</div></div>', binanceURL);
+  assert.equal(await value.step(context()), 'skipped'); dom.window.close();
+});
+test('Binance recognizes a linkless card with matching name and avatar when handle differs', async () => {
+  const avatar = '<a href="/en/square/profile/killiankillua"><img src="https://example.org/avatar.jpg?size=40"></a>';
+  const { dom, value } = await adapter('content-binance.js', avatar + binanceHeader, binanceURL);
+  let card;
+  dom.window.document.querySelector('.nick').addEventListener('mouseover', () => {
+    card = dom.window.document.createElement('div'); card.className = 'bn-bubble';
+    card.innerHTML = '<img src="https://example.org/avatar.jpg?size=120"><button>Follow</button><div>Killian Killua</div><div>@another_display_handle</div>';
+    dom.window.document.body.append(card);
+  }, { once: true });
+  assert.equal(await value.step(context({ action: async button => assert.equal(button.parentElement, card) })), 'acted'); dom.window.close();
+});
 test('Binance retries and skips a missing hover card without clicking unrelated buttons', async () => {
   const { dom, value } = await adapter('content-binance.js', '<main>' + binanceHeader + '<button>Follow</button></main>', binanceURL);
   let scrolled = false; dom.window.scrollBy = () => { scrolled = true; };

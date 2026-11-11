@@ -18,10 +18,27 @@
     for (let el = link, depth = 0; el && depth < 5; el = el.parentElement, depth++) {
       for (const id of (el.getAttribute('aria-describedby') || el.getAttribute('aria-controls') || '').split(/\s+/).filter(Boolean)) { const tip = document.getElementById(id); if (tip) associated.add(tip); }
     }
-    for (const card of new Set([...associated, ...document.querySelectorAll(overlays)])) {
+    const candidates = new Set([...associated, ...document.querySelectorAll(overlays)]);
+    for (const button of document.querySelectorAll('button, [role="button"]')) {
+      if (!visible(button) || (!isFollow(button) && !isFollowing(button))) continue;
+      for (let parent = button.parentElement, depth = 0; parent && depth < 6; parent = parent.parentElement, depth++) {
+        const style = getComputedStyle(parent), rect = parent.getBoundingClientRect();
+        if (['absolute', 'fixed'].includes(style.position) && rect.width <= 600 && rect.height <= 500) candidates.add(parent);
+      }
+    }
+    const normalize = value => value.normalize('NFKC').replace(/\s+/g, ' ').trim().toLowerCase();
+    const name = normalize(link.textContent);
+    const imageKey = image => { try { const u = new URL(image.currentSrc || image.src, location.href); return u.origin + u.pathname; } catch { return null; } };
+    const sourceImages = new Set([...document.querySelectorAll('a[href*="/square/profile/"]')].filter(a => profile(a) === account && !a.closest(overlays)).flatMap(a => [...a.querySelectorAll('img')]).map(imageKey).filter(Boolean));
+    for (const card of candidates) {
       if (!visible(card) || card.contains(link) || card.querySelector('.menu-item')) continue;
       const profiles = [...card.querySelectorAll('a[href*="/square/profile/"]')];
-      if (profiles.length ? !profiles.some(a => profile(a) === account) : !associated.has(card)) continue;
+      const texts = [...card.querySelectorAll('a, div, span, p, strong, h1, h2, h3')].map(el => normalize(el.textContent));
+      const sameName = name && texts.includes(name);
+      const sameHandle = texts.some(text => (text.match(/@[a-z0-9_-]+/g) || []).some(handle => handle.slice(1) === account));
+      const sameAvatar = [...card.querySelectorAll('img')].some(image => sourceImages.has(imageKey(image)));
+      const identified = profiles.length ? profiles.some(a => profile(a) === account) : associated.has(card) || sameName && (sameHandle || sameAvatar);
+      if (!identified) continue;
       const buttons = [...card.querySelectorAll('button, [role="button"]')].filter(visible);
       const following = buttons.find(isFollowing);
       if (following) return { card, following: true };
