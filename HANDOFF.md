@@ -7,7 +7,7 @@ Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.4.0.
 - Private repo: https://github.com/KattyFury/personal_tool_follow
 - User working copy: D:\Files\Claude\personal_tool_follow
 - Chrome Load unpacked folder: D:\Files\Claude\personal_tool_follow\extension
-- A second development copy exists under C:\Users\Dell\Documents\Codex\2026-11-11\i\work\personal_tool_follow. Keep copies synchronized through Git; check for local edits first.
+- A second development copy may exist under C:\Users\Dell\Documents\Codex\2026-11-11\i\work\ (old folder name tool_personal_follow). Its remote still works through the GitHub redirect, but switch it to the new URL. Keep copies synchronized through Git; check for local edits first.
 
 ## User requirements — follow these
 
@@ -15,7 +15,7 @@ Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.4.0.
 - VERTICAL layout: settings TOP one third; platform functions BOTTOM two thirds.
 - Design is BLACK, YELLOW #F5B301, WHITE, with neutral greys. Do not propose blue. Use the supplied design system product palette (0xhieu-xyz), not its generic blue defaults.
 - Single compact screen. X, Binance, Other platforms placeholder.
-- X: adapt existing source from tool_personal_xmanager; Personal SF >10 filter and Standard option; four action modes and whitelist.
+- X: adapted from the old X Manager userscripts (GitHub repo tool_personal_xmanager was DELETED 2026-11-11; the only copy is reference/xmanager/ here, do not delete it); Personal SF >10 filter and Standard option; four action modes and whitelist.
 - X Rest controls AND batch-rest behavior removed in 0.3.1. Whitelist has the freed space. Keep per-action delays.
 - Binance: hover an author name, open the matching profile card, follow, wait 10–30 seconds, then scroll. Daily cap 500 by default.
 - Keep communication brief. User explicitly approved the debugger permission for real hover.
@@ -30,8 +30,8 @@ Dependency-free Manifest V3 extension. Runtime code lives in extension/. Node de
 - content-core.js: cancellable execution, per-action delay, attempt/confirmed counts, cap enforcement, hover bridge and hit testing.
 - content-binance.js: feed author selectors from supplied card header; hover retries; matching profile links OR exact display name plus handle/avatar; excludes menus; three consecutive missing cards stop execution. No JavaScript-dispatched hover in production Binance.
 - content-x.js: X adapter. X hover logic remains adapted from original source.
-- sidepanel.html/css/js: vertical UI; yellow Start/Save/selection/running states; expanded Whitelist.
-- design/: original copied tokens and CSS from repo_personal_design. Source history/provenance in docs/SOURCES.md.
+- sidepanel.html/css/js (0.4.0 redesign): app bar with icon + version pill (footer removed). Settings tile (white): segmented X/Binance + Saved/Unsaved indicator + Save; Daily cap | Delay min-max; Whitelist textarea fills the remaining height with the SF>10 Kaito switch in its header (X only); Binance shows a one-line note instead. Platform cards (black #161616, color-scheme dark): logo, title, open link, status chip; yellow attempts counter + progress meter (#<platform>-meter = attempts/limit); X Action select saves the X mode immediately on change and is disabled while running; status line; tab select + Stop + Start in one row. A running card gets a yellow inset outline (.is-running) and a pulsing chip. #x-mode-label is kept as sr-only for JS. Styles use only design/web.css tokens plus --pf-* aliases to the neutral palette.
+- design/: original copied tokens and CSS from repo_personal_design (GitHub repo now named personal_repo_designsystem). Source history/provenance in docs/SOURCES.md.
 - reference/xmanager/: original user scripts retained unchanged for comparison.
 
 ## Important behavior
@@ -53,18 +53,22 @@ npx playwright test
 node scripts/check-browser-hover.js
 node scripts/check-binance-hover.js
 
-Requires installed Google Chrome for browser checks. Last relevant runs: 24 unit/DOM/background tests passed for 0.3.1; 6 UI tests passed on palette update, including exact yellow color and layout sizes. Browser hover proof and integrated CSS-hover-only fixture passed when introduced in 0.3.0. Fixtures use isolated Chrome and no live accounts.
+Requires installed Google Chrome for browser checks. Last runs (0.4.0, 2026-11-11): npm test all passed, npm run check passed, 6/6 Playwright UI tests passed (1:2 ratio, fits 400x740, no overflow at 320-390px, yellow Start/segment/running chip). Browser hover proof and integrated CSS-hover-only fixture passed when introduced in 0.3.0. Fixtures use isolated Chrome and no live accounts.
 
 ## Recent commits
 
-- 0.4.0: side panel redesign — black platform cards, yellow counters + progress meter, running card outlined in yellow, X/Binance segmented settings, Whitelist with inline SF>10 switch, tab picker + Stop/Start on one row, X Action change saves immediately.
-
+- 86edc44: side panel redesign — black platform cards, yellow counters + progress meter, running card outlined in yellow, X/Binance segmented settings, Whitelist with inline SF>10 switch, tab picker + Stop/Start on one row, X Action change saves immediately.
 - 13237ef: correct black-yellow-white palette (0.3.2)
 - 31bb128: remove X rests, expand Whitelist (0.3.1)
 - 4273cd9: actual browser hover through approved debugger permission (0.3.0)
 
 ## Updating
 
-Work in the D: copy or synchronize carefully. Commit/push and update the other copy with git pull --ff-only only after checking local changes. Reload Personal Follow in chrome://extensions, refresh Binance/X, then verify version in sidebar footer. New permission was explicitly approved; do not repeatedly ask for the same permission. Do not bypass any new approval rejection.
+Work in the D: copy or synchronize carefully. Commit/push and update the other copy with git pull --ff-only only after checking local changes. Reload Personal Follow in chrome://extensions, refresh Binance/X, then verify the version pill at the top right of the sidebar (v0.4.0). New permission was explicitly approved; do not repeatedly ask for the same permission. Do not bypass any new approval rejection.
 
-No active implementation request remains. User requested handoff and stopping.
+## Open items
+
+- The 0.4.0 redesign is verified only in fixtures/screenshots; the user has not yet confirmed it live in Chrome. For visual fixes edit sidepanel.css (one block per component, no end-of-file overrides).
+- X still needs live validation on real accounts.
+
+No active implementation request remains. User requested handoff.
