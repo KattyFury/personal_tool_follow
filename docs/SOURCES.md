@@ -21,7 +21,7 @@ No license was added to upstream source. This private derivative is for the user
 - Source commit: `ee8079aa14c0d75dc480b1a9543b2634dc5a4571`
 - `web.css` and `tokens.json` copied unchanged into `extension/design/`.
 - Sidebar uses Bento v4 canvas, white tiles, 20/10/pill radii, functional type tokens, compact spacing, and weights 400/600/700.
-- Product layout requested by user: desktop 2:1 columns, platform controls left, settings right. Narrow side panels retain both columns; labels and controls use compact spacing.
+- Product layout requested by user: vertical 1:2 rows, settings on top and platform functions underneath. All sidebar widths retain the same top-to-bottom order.
 - Sidebar spacing uses the existing 4/8/12 spacing tokens. No custom font sizes or colors were introduced.
 
 ## Other research

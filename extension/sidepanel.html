@@ -9,10 +9,23 @@
   <main class="frame">
     <header><h1>Personal Follow</h1></header>
     <div class="board">
+      <aside class="tile settings">
+        <div class="settings-header"><h2>Settings</h2><div class="segmented" aria-label="Settings platform"><button id="settings-x" aria-pressed="true">X</button><button id="settings-binance" aria-pressed="false">Binance</button></div><button class="primary" type="submit" form="settings-form">Save</button></div><span id="save-state" class="save-state" role="status">Saved</span>
+        
+        <form id="settings-form">
+          <div id="x-settings"><label class="toggle" title="Follow only SF > 10. Preserve SF > 10 when unfollowing; skip missing SF. Requires Kaito."><input type="checkbox" id="personal">SF &gt; 10 · Kaito</label></div>
+          <label>Daily cap<input id="dailyLimit" type="number" min="1" max="10000" step="1" required></label>
+          <fieldset><legend>Delay · sec</legend><div class="range"><label><span class="sr-only">Minimum delay</span><input id="minDelay" type="number" min="1" max="86400" required></label><span>–</span><label><span class="sr-only">Maximum delay</span><input id="maxDelay" type="number" min="1" max="86400" required></label></div></fieldset>
+          <div id="x-rest"><fieldset><legend title="Rest after 20–30 mass-follow or unfollow actions">Rest · min</legend><div class="range"><label><span class="sr-only">Minimum rest</span><input id="restMin" type="number" min="1" max="1440"></label><span>–</span><label><span class="sr-only">Maximum rest</span><input id="restMax" type="number" min="1" max="1440"></label></div></fieldset><label class="whitelist-field">Whitelist<textarea id="whitelist" rows="1" spellcheck="false" placeholder="@handle, @handle"></textarea></label></div>
+          <p id="settings-error" class="error" role="alert"></p>
+          
+        </form>
+        
+      </aside>
       <section class="platforms" aria-label="Platform controls">
         <article class="tile" data-platform="x">
           <div class="row heading"><div class="identity"><span class="logo" aria-hidden="true">𝕏</span><div><h2>X</h2><p id="x-mode-label">Follow back</p></div></div><span class="chip" id="x-state">Ready</span></div>
-          <div class="row detail"><div><strong id="x-count">0 / 400</strong><p>attempts today · <span id="x-confirmed">0</span> confirmed</p></div><label class="tab-field"><span class="sr-only">X browser tab</span><select id="x-tab"><option value="">Open an X tab first</option></select></label></div>
+          <div class="x-mode"><label>Action<select id="mode"><option value="follow">Follow back</option><option value="massfollow">Mass follow</option><option value="unfollow_topdown">Unfollow ↓</option><option value="unfollow">Unfollow ↑</option></select></label></div><div class="row detail"><div><strong id="x-count">0 / 400</strong><p>attempts today · <span id="x-confirmed">0</span> confirmed</p></div><label class="tab-field"><span class="sr-only">X browser tab</span><select id="x-tab"><option value="">Open an X tab first</option></select></label></div>
           <p class="status" id="x-status" role="status">Open your followers list.</p>
           <div class="row actions"><a href="https://x.com" target="_blank" rel="noopener">Open X ↗</a><span class="countdown" id="x-timer"></span><button class="secondary" id="x-stop" disabled>Stop</button><button class="primary" id="x-start">Start</button></div>
         </article>
@@ -24,21 +37,9 @@
         </article>
         <article class="tile future"><div class="identity"><span class="logo" aria-hidden="true">+</span><div><h2>Other platforms</h2><p>Room for the next one.</p></div></div><span class="chip">Later</span></article>
       </section>
-      <aside class="tile settings">
-        <div class="row"><h2>Settings</h2><span id="save-state" class="save-state" role="status">Saved</span></div>
-        <div class="segmented" aria-label="Settings platform"><button id="settings-x" aria-pressed="true">X</button><button id="settings-binance" aria-pressed="false">Binance</button></div>
-        <form id="settings-form">
-          <div id="x-settings"><label>Action<select id="mode"><option value="follow">Follow back</option><option value="massfollow">Mass follow</option><option value="unfollow_topdown">Unfollow ↓</option><option value="unfollow">Unfollow ↑</option></select></label><label class="toggle" title="Follow only SF > 10. Preserve SF > 10 when unfollowing; skip missing SF. Requires Kaito."><input type="checkbox" id="personal">SF &gt; 10</label><p class="hint" id="filter-hint">Needs Kaito.</p></div>
-          <label>Daily cap<input id="dailyLimit" type="number" min="1" max="10000" step="1" required></label>
-          <fieldset><legend>Delay · sec</legend><div class="range"><label><span class="sr-only">Minimum delay</span><input id="minDelay" type="number" min="1" max="86400" required></label><span>–</span><label><span class="sr-only">Maximum delay</span><input id="maxDelay" type="number" min="1" max="86400" required></label></div></fieldset>
-          <div id="x-rest"><fieldset><legend title="Rest after 20–30 mass-follow or unfollow actions">Rest · min</legend><div class="range"><label><span class="sr-only">Minimum rest</span><input id="restMin" type="number" min="1" max="1440"></label><span>–</span><label><span class="sr-only">Maximum rest</span><input id="restMax" type="number" min="1" max="1440"></label></div></fieldset><label>Whitelist<textarea id="whitelist" rows="2" spellcheck="false" placeholder="@handle, @handle"></textarea></label></div>
-          <p id="settings-error" class="error" role="alert"></p>
-          <button class="primary save" type="submit">Save</button>
-        </form>
-        <p class="hint footer-note">Next start.<br>Reset 00:00 VN.</p>
-      </aside>
+
     </div>
-    <footer><span>Keep source tabs open.</span><span class="version">0.2</span></footer>
+    <footer><span>Keep source tabs open.</span><span class="version">0.2.1</span></footer>
   </main>
   <script type="module" src="sidepanel.js"></script>
 </body>

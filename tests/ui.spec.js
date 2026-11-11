@@ -24,12 +24,12 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('#dailyLimit')).toHaveValue('400');
 });
 
-test('single-screen desktop uses 2:1 layout and supports settings and start/stop', async ({ page }) => {
+test('vertical layout supports settings and start/stop', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const layout = await page.evaluate(() => {
     const left = document.querySelector('.platforms').getBoundingClientRect(), right = document.querySelector('.settings').getBoundingClientRect();
-    return { ratio: left.width / right.width, height: document.documentElement.scrollHeight, width: document.documentElement.scrollWidth };
+    return { ratio: left.height / right.height, height: document.documentElement.scrollHeight, width: document.documentElement.scrollWidth };
   });
   expect(layout.ratio).toBeGreaterThan(1.95); expect(layout.ratio).toBeLessThan(2.05);
   expect(layout.height).toBeLessThanOrEqual(900); expect(layout.width).toBe(1280);
@@ -59,10 +59,10 @@ test('sidebar keeps controls and settings together at 400 by 800', async ({ page
   await page.setViewportSize({ width: 400, height: 800 });
   const layout = await page.evaluate(() => {
     const left = document.querySelector('.platforms').getBoundingClientRect(), right = document.querySelector('.settings').getBoundingClientRect();
-    return { ratio: left.width / right.width, height: document.documentElement.scrollHeight, right: right.x, leftEnd: left.right };
+    return { ratio: left.height / right.height, height: document.documentElement.scrollHeight, settingsBottom: right.bottom, functionsTop: left.y };
   });
   expect(layout.ratio).toBeCloseTo(2, 1);
-  expect(layout.right).toBeGreaterThan(layout.leftEnd);
+  expect(layout.functionsTop).toBeGreaterThan(layout.settingsBottom);
   expect(layout.height).toBeLessThanOrEqual(800);
   await page.screenshot({ path: 'test-results/sidebar.png', fullPage: true });
 });
@@ -70,5 +70,10 @@ test('sidebar keeps controls and settings together at 400 by 800', async ({ page
 test('fits one sidebar screen at 400 by 740', async ({ page }) => {
   await page.setViewportSize({ width: 400, height: 740 });
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(740);
+  const layout = await page.evaluate(() => {
+    const settings = document.querySelector('.settings');
+    return { settingsFits: settings.scrollHeight <= settings.clientHeight, buttonsFit: [...document.querySelectorAll('.platforms .actions')].every(el => el.getBoundingClientRect().bottom <= el.closest('article').getBoundingClientRect().bottom) };
+  });
+  expect(layout.settingsFits).toBe(true); expect(layout.buttonsFit).toBe(true);
   await page.screenshot({ path: 'test-results/sidebar-compact.png', fullPage: true });
 });

@@ -1,6 +1,6 @@
 # Personal Follow
 
-A Chrome extension that opens in Chrome’s native side panel beside your current page. Platform controls use the left two thirds; settings use the right third. Other platforms have a placeholder only.
+A Chrome extension that opens in Chrome’s native side panel beside your current page. Settings occupy the top third; platform functions occupy the bottom two thirds. Other platforms have a placeholder only.
 
 ## Install in Chrome
 
@@ -36,7 +36,7 @@ The extension does not transfer legacy userscript counters/settings automaticall
 
 ## Design and validation
 
-The sidebar copies [your design tokens](https://github.com/KattyFury/repo_personal_design) and follows Bento v4. The sidebar keeps controls on the left and settings on the right, including narrow panel widths. See [source provenance](docs/SOURCES.md) and [test details](docs/TESTING.md).
+The sidebar copies [your design tokens](https://github.com/KattyFury/repo_personal_design) and follows Bento v4. The sidebar uses a vertical 1:2 split: settings above, platform functions below. See [source provenance](docs/SOURCES.md) and [test details](docs/TESTING.md).
 
 `npm ci`
 

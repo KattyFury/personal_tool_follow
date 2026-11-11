@@ -15,7 +15,7 @@ Coverage includes:
 - Late messages cannot revive a stopped run.
 - Vietnam-time day rollover and settings validation.
 - Sidebar settings switching, save, Start and Stop.
-- Sidebar 2:1 proportions; complete panel at 400×800 and 400×740.
+- Vertical settings/functions 1:2 proportions; complete panel at 400×800 and 400×740.
 - No horizontal overflow at 390, 360, and 320 pixels; functional text remains at least 12 pixels.
 
 ## Manual validation still needed
