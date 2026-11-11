@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Personal Follow",
+  "version": "0.1.0",
+  "description": "One screen for your X and Binance Square follow tools.",
+  "permissions": ["storage", "tabs"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_title": "Open Personal Follow" },
+  "content_scripts": [
+    { "matches": ["https://x.com/*", "https://twitter.com/*"], "js": ["content-core.js", "content-x.js"], "run_at": "document_idle" },
+    { "matches": ["https://www.binance.com/*/square*", "https://www.binance.com/square*"], "js": ["content-core.js", "content-binance.js"], "run_at": "document_idle" }
+  ]
+}

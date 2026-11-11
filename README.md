@@ -1,56 +1,53 @@
-# tool_personal_follow
+# Personal Follow
 
-Personal Chrome extension for Binance Square. Research stage; implementation has not started.
+A small Chrome extension with one dashboard for X and Binance Square. Platform controls use the left two thirds; settings use the right third. Other platforms have a placeholder only.
 
-## Requested behavior
+## Install in Chrome
 
-- Follow accounts encountered while scrolling the Square feed.
-- Daily cap: 500 follow attempts, persisted across browser restarts. This is a user-selected cap, not a verified Binance limit.
-- Random delay of 10–30 seconds between follow attempts.
-- Start, pause, and stop controls.
+1. Download the extension ZIP supplied with this project and extract it to a permanent folder, or clone this repository.
+2. Disable your old X Manager Tampermonkey scripts so both tools do not act at once. Keep the Kaito badge extension enabled if using the Personal filter.
+3. Open `chrome://extensions`, turn on Developer mode, and choose **Load unpacked**.
+4. Select the folder containing `manifest.json` (the `extension` folder if using this repository).
+5. Refresh open X and Binance tabs after installing or reloading the extension.
+6. Click the Personal Follow extension icon to open the dashboard. Open the required platform tab, choose it in the platform row, save settings, and click Start. Stop cancels pending waits; an already submitted action cannot be undone.
 
-## Repository research — 2026-11-11
+## X
 
-### Recommended foundation: WXT
+Adapted from [your X Manager](https://github.com/KattyFury/tool_personal_xmanager), with both source userscripts copied unchanged under `reference/xmanager/`.
 
-https://github.com/wxt-dev/wxt
+- **Follow back:** open your followers or verified followers list.
+- **Mass follow:** open a post with replies; targets verified reply authors.
+- **Unfollow:** open your following list; choose top to bottom or bottom to top.
+- Personal filter enabled by default: follow only SF > 10; unfollow SF ≤ 10; skip missing SF and preserve the whitelist. Requires your Kaito badge extension.
+- Personal filter off: no SF requirement for follows; unfollow preserves the whitelist and verified accounts that follow you.
+- Original defaults retained: 400 attempts/day, 60–90 seconds between actions, 5–10 minute rests after 20–30 mass-follow/unfollow actions. Full source whitelist retained.
 
-MIT licensed, TypeScript extension framework with Manifest V3 support, development reloads, and packaging. GitHub metadata checked today: 10,721 stars; pushed 2026-11-11. Popularity and activity support the shortlist but are not a security audit. Use the official vanilla TypeScript starter rather than inventing build infrastructure. Preserve required license notices for any reused source.
+## Binance Square
 
-### Official API patterns: Google Chrome samples
+Open the Square feed. The runner follows identifiable feed accounts, scrolls for more, skips already followed accounts, and stops if the page changes or an outcome is unclear.
 
-https://github.com/GoogleChrome/chrome-extensions-samples
+Defaults: **500 attempts/day**, random **10–30 seconds** between follows. The cap is your configured maximum, not an official Binance limit. Current live feed markup still needs validation; the adapter may find no eligible buttons if Binance changes its layout.
 
-Official Google samples, Apache-2.0 licensed. GitHub metadata checked today: 17,852 stars; pushed 2026-11-10. Study content scripts, messaging, storage, and service-worker lifecycle. Avoid archived Manifest V2 examples.
+## How counts and settings work
 
-### Closest functional match: Binance Square Follow Manager
+Settings and counters are saved in Chrome extension storage. A background worker serializes reservations, permitting one run per platform across tabs. The cap counts **attempts**, reserved before clicking; confirmed outcomes have a separate count. Failed or uncertain attempts remain counted. Counters reset at midnight in Vietnam time. X and Binance have independent caps. A browser restart stops runners while retaining settings and daily counters. Saving settings applies to the next start.
 
-https://github.com/unityheroes/binance-Square-Follow-Manager-addon
+The extension does not transfer legacy userscript counters/settings automatically. Avoid using the legacy and new tools on the same day without adjusting the remaining cap. Chrome may delay background-tab timers; the specified delay is a minimum range rather than an exact execution guarantee. Keep source tabs open and check them if the dashboard requests attention. Login/verification/restriction checks cover known visible prompts; they are not an exhaustive platform detector.
 
-Inspected README.md, manifest.json, and content.js on main. Root listing contains five files and no license file; do not copy its code without a verified license or permission. Useful as a behavior and selector reference, not a production-ready base.
+## Design and validation
 
-Observed issues:
+The dashboard copies [your design tokens](https://github.com/KattyFury/repo_personal_design) and follows Bento v4. Desktop layout verified at 1280×900 and 1366×768; smaller screens stack the regions. See [source provenance](docs/SOURCES.md) and [test details](docs/TESTING.md).
 
-- Selects .follow-card-item and .feed-follow-button button; applicability to the current scrolling feed is unverified.
-- Marks a follow successful immediately after dispatching click events. No confirmed Following state or server outcome.
-- Each tab independently reads and writes the daily counter, so simultaneous runs can exceed the intended cap.
-- Date is captured once per run, so a session crossing midnight does not roll over correctly.
-- Running flag is set after asynchronous storage work, leaving a concurrent-start race.
-- End-of-page handling can stop before an infinite feed finishes loading.
-- Runs on all www.binance.com pages instead of only Square.
-- No tests or build setup in root listing.
-- README claims about avoiding detection do not establish reliability or account safety.
+`npm ci`
 
-### Workflow reference: Automa
+`npm test`
 
-https://github.com/AutomaApp/automa
+`npm run check`
 
-Useful for studying workflow execution, scheduling, and status reporting. Repository states mixed AGPL/commercial licensing. Do not copy code until the applicable license is checked. A general workflow engine is more machinery than this narrow extension needs.
+`npx playwright test` (requires Google Chrome)
 
-## Recommended implementation approach
+The extension runs directly from `extension/`; no build or runtime dependencies are needed. Development dependencies are used only for tests.
 
-Use WXT for extension scaffolding and Google samples for browser API patterns. Keep Binance DOM handling in a small replaceable adapter, validated against the actual feed before enabling actions. Persist attempt reservations centrally in one background authority so tabs cannot overshoot 500; track confirmed follows separately from attempts. Reserve before clicking, and stop on uncertain outcomes rather than blindly retrying. Support cancellation of delays, prevent overlapping runs, deduplicate account IDs, and handle midnight consistently using Asia/Ho_Chi_Minh unless changed by the user. Stop on login requirements, verification prompts, restrictions, or unknown UI states. Use only Square page access; no trading permissions, wallet access, private API reverse engineering, or detection bypasses.
+**Validation status:** automated tests use simulated DOM and mocked extension messages. No live follows or unfollows have been performed, and the extension has not been installed into your Chrome. Start with a small cap for live validation.
 
-## Validation still required
-
-Current Square feed selectors and success state, platform restrictions, installed Chrome behavior, and the extension itself have not been tested. Research references are not installed or executed.
+![Dashboard preview](docs/dashboard.png)
