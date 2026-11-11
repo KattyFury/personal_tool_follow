@@ -1,6 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { defaults, validSettings, reserveCount, dayKey, platformFor } from '../extension/model.js';
+import { readFile } from 'node:fs/promises';
+
+test('extension uses the native Chrome sidebar', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../extension/manifest.json', import.meta.url), 'utf8'));
+  assert.ok(manifest.permissions.includes('sidePanel'));
+  assert.equal(manifest.side_panel.default_path, 'sidepanel.html');
+  assert.equal(manifest.action.default_popup, undefined);
+  const background = await readFile(new URL('../extension/background.js', import.meta.url), 'utf8');
+  assert.ok(background.includes('openPanelOnActionClick: true'));
+  assert.ok(!background.includes('chrome.tabs.create'));
+});
 
 test('defaults keep X timing and Binance requested timing separate', () => {
   assert.deepEqual([defaults.x.dailyLimit, defaults.x.minDelay, defaults.x.maxDelay], [400, 60, 90]);

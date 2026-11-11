@@ -2,12 +2,8 @@ import { defaults, dayKey, validSettings, reserveCount, platformFor } from './mo
 
 let queue = Promise.resolve();
 const serial = fn => { const next = queue.then(fn); queue = next.catch(() => {}); return next; };
-const dashboard = chrome.runtime.getURL('dashboard.html');
-chrome.action.onClicked.addListener(async () => {
-  const existing = (await chrome.tabs.query({})).find(tab => tab.url === dashboard);
-  if (existing) { await chrome.tabs.update(existing.id, { active: true }); await chrome.windows.update(existing.windowId, { focused: true }); }
-  else await chrome.tabs.create({ url: dashboard });
-});
+const panelURL = chrome.runtime.getURL('sidepanel.html');
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(error => console.error(error));
 
 async function read() {
   const value = await chrome.storage.local.get(['settings', 'counts']);
@@ -47,7 +43,7 @@ async function handle(message, sender) {
     }
     throw Error('Unsupported content request.');
   }
-  if (sender.url !== dashboard) throw Error('Open the dashboard.');
+  if (sender.url !== panelURL) throw Error('Open the sidebar.');
   if (message.type === 'snapshot') {
     const state = await read(), runs = await sessions(), tabs = await chrome.tabs.query({});
     for (const [key, run] of Object.entries(runs)) if (!tabs.some(t => t.id === run.tabId && platformFor(t.url) === key)) delete runs[key];

@@ -58,14 +58,46 @@ footer { display: flex; justify-content: space-between; gap: var(--ds-space-12);
 .version { color: var(--ds-color-grey); margin-left: var(--ds-space-4); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 [hidden] { display: none !important; }
-@media (min-width: 801px) and (max-height: 820px) {
-  .frame { padding: var(--ds-space-16) var(--ds-space-24) var(--ds-space-12); }
-  header { margin: 0 0 var(--ds-space-12); }
-  .tile { padding: var(--ds-space-16); }
-  label, fieldset { margin-bottom: var(--ds-space-8); }
-  .settings .row, .segmented { margin-bottom: var(--ds-space-12); }
-  .detail { padding-top: var(--ds-space-12); }
-  footer { padding-top: var(--ds-space-8); }
-}
-@media (max-width: 800px) { .board { grid-template-columns: 1fr; } .settings { grid-row: 2; } }
-@media (max-width: 640px) { .frame { padding: var(--ds-space-16); } header { margin-top: 0; } header > .chip { display: none; } .detail { flex-wrap: wrap; } .tab-field { max-width: 100%; width: 100%; } .actions { gap: var(--ds-space-8); } footer { flex-direction: column; } .future { align-items: flex-start; } }
+
+.frame { max-width: 760px; padding: var(--ds-space-12); }
+header { margin: 0 0 var(--ds-space-12); }
+h1 { font-size: var(--ds-type-header-size); line-height: var(--ds-type-header-line); margin: 0; font-weight: 600; }
+.board { grid-template-columns: minmax(0,2fr) minmax(0,1fr); gap: var(--ds-space-8); }
+.platforms { gap: var(--ds-space-8); }
+.tile { padding: var(--ds-space-12); }
+.row, .identity { gap: var(--ds-space-8); }
+h2 { font-size: var(--ds-type-content-size); line-height: var(--ds-type-content-line); }
+.logo { width: 28px; height: 28px; flex-basis: 28px; }
+.heading { align-items: flex-start; flex-wrap: wrap; }
+.heading .chip { padding: var(--ds-space-4) var(--ds-space-8); }
+.detail { display: block; padding: var(--ds-space-12) 0; }
+.detail strong { font-size: var(--ds-type-content-size); line-height: var(--ds-type-content-line); }
+.detail p { font-size: var(--ds-type-note-size); line-height: var(--ds-type-note-line); }
+.tab-field { max-width: 100%; margin: var(--ds-space-8) 0 0; }
+.status { min-height: 36px; font-size: var(--ds-type-note-size); line-height: var(--ds-type-note-line); }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ds-space-8); }
+.actions a { grid-column: 1 / -1; font-size: var(--ds-type-note-size); line-height: var(--ds-type-note-line); }
+.countdown:empty { display: none; }
+.countdown { grid-column: 1 / -1; }
+button { padding: var(--ds-space-8); min-height: 36px; }
+.future { display: block; }
+.future .logo { display: none; }
+.future .chip { margin-top: var(--ds-space-8); }
+.future p { display: none; }
+.settings { padding: var(--ds-space-8); }
+.settings .row { display: block; margin-bottom: var(--ds-space-8); }
+.save-state { display: block; margin-top: var(--ds-space-4); }
+.segmented { padding: var(--ds-space-4); margin-bottom: var(--ds-space-12); display: grid; grid-template-columns: 1fr; }
+.segmented button { min-height: 28px; padding: var(--ds-space-4); font-size: var(--ds-type-label-size); line-height: var(--ds-type-label-line); }
+label, legend { font-size: var(--ds-type-label-size); line-height: var(--ds-type-label-line); }
+label, fieldset { margin-bottom: var(--ds-space-12); }
+input, select, textarea { padding: var(--ds-space-8); font-size: var(--ds-type-content-size); line-height: var(--ds-type-content-line); }
+.range { gap: var(--ds-space-4); }
+.range input { appearance: textfield; padding: var(--ds-space-8) var(--ds-space-4); }
+.range input::-webkit-inner-spin-button, .range input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.toggle { align-items: flex-start; }
+.toggle input { flex: 0 0 16px; margin-top: 0; }
+textarea { min-height: 60px; }
+.footer-note { margin-top: var(--ds-space-8); }
+footer { padding-top: var(--ds-space-8); }
+@media (max-width: 359px) { .frame { padding: var(--ds-space-8); } .tile { padding: var(--ds-space-8); } .board { grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); } }

@@ -14,8 +14,8 @@ Coverage includes:
 - Stale run tokens and non-owner tabs cannot reserve attempts.
 - Late messages cannot revive a stopped run.
 - Vietnam-time day rollover and settings validation.
-- Dashboard settings switching, save, Start and Stop.
-- Desktop 2:1 proportions; complete screen at 1280×900 and 1366×768.
+- Sidebar settings switching, save, Start and Stop.
+- Sidebar 2:1 proportions; complete panel at 400×800 and 400×740.
 - No horizontal overflow at 390, 360, and 320 pixels; functional text remains at least 12 pixels.
 
 ## Manual validation still needed

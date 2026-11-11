@@ -5,7 +5,7 @@ import { defaults } from '../extension/model.js';
 
 test.beforeEach(async ({ page }) => {
   await page.route('http://127.0.0.1:4173/**', async route => {
-    const name = new URL(route.request().url()).pathname.slice(1) || 'dashboard.html';
+    const name = new URL(route.request().url()).pathname.slice(1) || 'sidepanel.html';
     const file = path.resolve('extension', name);
     if (!file.startsWith(path.resolve('extension') + path.sep)) return route.abort();
     const type = name.endsWith('.js') ? 'text/javascript' : name.endsWith('.css') ? 'text/css' : 'text/html';
@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
       return structuredClone(state);
     } } };
   }, defaults);
-  await page.goto('http://127.0.0.1:4173/dashboard.html');
+  await page.goto('http://127.0.0.1:4173/sidepanel.html');
   await expect(page.locator('#dailyLimit')).toHaveValue('400');
 });
 
@@ -37,7 +37,7 @@ test('single-screen desktop uses 2:1 layout and supports settings and start/stop
   await page.getByRole('button', { name: 'Binance', exact: true }).click();
   await expect(page.locator('#dailyLimit')).toHaveValue('500');
   await expect(page.locator('#minDelay')).toHaveValue('10'); await expect(page.locator('#maxDelay')).toHaveValue('30');
-  await page.locator('#dailyLimit').fill('450'); await page.getByRole('button', { name: 'Save settings' }).click();
+  await page.locator('#dailyLimit').fill('450'); await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.locator('#binance-count')).toHaveText('0 / 450');
   await page.locator('#binance-start').click(); await expect(page.locator('#binance-state')).toHaveText('Running');
   await page.locator('#binance-stop').click(); await expect(page.locator('#binance-state')).toHaveText('Stopped');
@@ -55,8 +55,20 @@ for (const width of [390, 360, 320]) test(`no horizontal overflow at ${width}px`
   if (width === 390) await page.screenshot({ path: 'test-results/dashboard-mobile.png', fullPage: true });
 });
 
-test('fits one screen at 1366 by 768', async ({ page }) => {
-  await page.setViewportSize({ width: 1366, height: 768 });
-  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(768);
-  await page.screenshot({ path: 'test-results/dashboard-laptop.png', fullPage: true });
+test('sidebar keeps controls and settings together at 400 by 800', async ({ page }) => {
+  await page.setViewportSize({ width: 400, height: 800 });
+  const layout = await page.evaluate(() => {
+    const left = document.querySelector('.platforms').getBoundingClientRect(), right = document.querySelector('.settings').getBoundingClientRect();
+    return { ratio: left.width / right.width, height: document.documentElement.scrollHeight, right: right.x, leftEnd: left.right };
+  });
+  expect(layout.ratio).toBeCloseTo(2, 1);
+  expect(layout.right).toBeGreaterThan(layout.leftEnd);
+  expect(layout.height).toBeLessThanOrEqual(800);
+  await page.screenshot({ path: 'test-results/sidebar.png', fullPage: true });
+});
+
+test('fits one sidebar screen at 400 by 740', async ({ page }) => {
+  await page.setViewportSize({ width: 400, height: 740 });
+  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(740);
+  await page.screenshot({ path: 'test-results/sidebar-compact.png', fullPage: true });
 });
