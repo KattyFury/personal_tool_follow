@@ -25,6 +25,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('vertical layout supports settings and start/stop', async ({ page }) => {
+  expect(await page.locator('#x-start').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(245, 179, 1)');
+  expect(await page.locator('#settings-x').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(245, 179, 1)');
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const layout = await page.evaluate(() => {
@@ -40,6 +42,7 @@ test('vertical layout supports settings and start/stop', async ({ page }) => {
   await page.locator('#dailyLimit').fill('450'); await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.locator('#binance-count')).toHaveText('0 / 450');
   await page.locator('#binance-start').click(); await expect(page.locator('#binance-state')).toHaveText('Running');
+  expect(await page.locator('#binance-state').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(245, 179, 1)');
   await page.locator('#binance-stop').click(); await expect(page.locator('#binance-state')).toHaveText('Stopped');
   await page.getByRole('button', { name: 'X', exact: true }).click();
   await expect(page.locator('#dailyLimit')).toHaveValue('400');

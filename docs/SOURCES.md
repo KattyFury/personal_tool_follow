@@ -30,3 +30,5 @@ No license was added to upstream source. This private derivative is for the user
 - https://github.com/GoogleChrome/chrome-extensions-samples — official Apache-2.0 browser API reference; no sample code copied.
 - https://github.com/unityheroes/binance-Square-Follow-Manager-addon — inspected for behavior and `.feed-follow-button` selector reference. No source copied; root lacked a license file when reviewed.
 - https://github.com/AutomaApp/automa — workflow reference; no source copied.
+
+Palette correction in 0.3.2: activate the existing 0xhieu-xyz product tokens. Yellow #F5B301 is used on primary buttons, selected settings, active status and focus; platform marks are yellow on black. White tiles and neutral greys follow the supplied product palette.
