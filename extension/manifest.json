@@ -1,13 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Personal Follow",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "minimum_chrome_version": "114",
   "description": "One screen for your X and Binance Square follow tools.",
   "permissions": [
     "storage",
     "tabs",
-    "sidePanel"
+    "sidePanel",
+    "debugger"
   ],
   "side_panel": {
     "default_path": "sidepanel.html"

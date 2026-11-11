@@ -27,3 +27,7 @@ Begin with a session cap of 1 or another small cap in settings. Check the platfo
 ## Linkless hover-card regression
 
 Version 0.2.4 supports cards without a profile anchor: exact display name plus matching @handle, or exact name plus matching avatar. It also discovers positioned profile containers without requiring a particular CSS class. Tests cover matching identity, wrong-handle rejection, and avatar matching across image-size query parameters. The supplied screenshot confirms a manual-hover popup is visible; its HTML was not captured, so a linkless popup remains a plausible cause rather than a verified live DOM finding. During inspection the installed sidebar still displayed 0.2.2. Reload the extension and refresh Square to use the updated adapter.
+
+## 0.3.0 browser input
+
+24 unit/DOM/background tests pass, including browser input scoping, active-tab checks, coordinate validation, subframe rejection, and Stop detachment. Two isolated Chrome fixture checks verify trusted input and the complete CSS-hover profile/follow/cap pipeline. Synthetic hover remains only in the adapter unit test mock; production Binance uses the background debugger bridge. Live Binance validation remains outstanding.

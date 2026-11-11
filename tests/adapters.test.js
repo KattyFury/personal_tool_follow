@@ -13,7 +13,7 @@ async function adapter(file, html, url) {
   return { dom, value };
 }
 function context(overrides = {}) {
-  return { settings: { mode: 'follow', personal: true, whitelist: '' }, seen: new Set(), check() {}, wait: async () => {}, report: async () => {}, action: async () => { throw Error('Unexpected action'); }, ...overrides };
+  return { settings: { mode: 'follow', personal: true, whitelist: '' }, seen: new Set(), check() {}, wait: async () => {}, report: async () => {}, hover: async el => el.dispatchEvent(new el.ownerDocument.defaultView.MouseEvent('mouseover', { bubbles: true })), unhover: async () => {}, action: async () => { throw Error('Unexpected action'); }, ...overrides };
 }
 test('X Personal follow uses source SF threshold and skips missing scores', async () => {
   const { dom, value } = await adapter('content-x.js', '<div data-testid="UserCell"><a href="/alice">Alice</a><span class="signal-avatar-badge__value">10</span><button>Follow</button></div><div data-testid="UserCell"><a href="/bob">Bob</a><button>Follow</button></div><div data-testid="UserCell"><a href="/carol">Carol</a><span class="signal-avatar-badge__value">11</span><button>Follow</button></div>', 'https://x.com/me/verified_followers');

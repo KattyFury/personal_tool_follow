@@ -37,6 +37,22 @@
             });
           },
           report,
+          async hover(element) {
+            check(run);
+            if (adapter.id !== 'binance' || !visible(element)) throw Error('Hover target is unavailable.');
+            const rect = element.getBoundingClientRect();
+            const point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            if (point.x < 0 || point.y < 0 || point.x >= innerWidth || point.y >= innerHeight) throw Error('Hover target is outside the visible feed.');
+            const hit = document.elementFromPoint(point.x, point.y);
+            if (!hit || (hit !== element && !element.contains(hit))) throw Error('Hover target is covered. Close the overlay and start again.');
+            await ask({ type: 'movePointer', platform: adapter.id, token: run.token, point });
+            check(run);
+          },
+          async unhover() {
+            check(run);
+            await ask({ type: 'movePointer', platform: adapter.id, token: run.token, point: { x: 1, y: 1 } });
+            check(run);
+          },
           async action(button, verify, confirm) {
             check(run);
             if (!visible(button) || button.disabled) throw Error('Target changed. Start again after checking the page.');

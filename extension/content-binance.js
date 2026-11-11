@@ -7,12 +7,6 @@
     try { const url = new URL(link.getAttribute('href'), location.href); return url.hostname === location.hostname ? url.pathname.match(/\/square\/profile\/([^/]+)/)?.[1].toLowerCase() : null; } catch { return null; }
   };
   const overlays = '[role="tooltip"], [data-popper-placement], .bn-bubble, .bn-tooltips, .bn-popover, [class*="user-card"], [class*="UserCard"], [class*="profile-card"], [class*="ProfileCard"], [class*="user-info"], [class*="UserInfo"], [class*="popover"], [class*="Popover"]';
-  function hover(link, enter) {
-    const rect = link.getBoundingClientRect();
-    const options = { bubbles: true, clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2, relatedTarget: document.body };
-    const types = enter ? ['pointerover', 'pointerenter', 'mouseover', 'mouseenter', 'mousemove'] : ['pointerout', 'pointerleave', 'mouseout', 'mouseleave'];
-    for (const type of types) link.dispatchEvent(new (type.startsWith('pointer') && window.PointerEvent ? PointerEvent : MouseEvent)(type, { ...options, bubbles: !type.endsWith('enter') && !type.endsWith('leave') }));
-  }
   function findProfileCard(account, link) {
     const associated = new Set();
     for (let el = link, depth = 0; el && depth < 5; el = el.parentElement, depth++) {
@@ -71,14 +65,15 @@
           let target = null;
           for (let attempt = 0; attempt < 3 && !target && link.isConnected; attempt++) {
             if (attempt) {
-              hover(hoverTarget, false);
+              await ctx.unhover();
               await ctx.wait(750);
               link.scrollIntoView({ block: 'center', behavior: 'instant' });
               await ctx.wait(500);
             }
             hoverTarget = attempt === 1 ? link.closest('.avatar-name-container') || link : link;
-            await ctx.report('Hovering ' + account + ' (' + (attempt + 1) + '/3)…');
-            ctx.check(); hover(hoverTarget, true);
+            await ctx.report('Moving browser pointer to ' + account + ' (' + (attempt + 1) + '/3)…');
+            ctx.check(); await ctx.hover(hoverTarget);
+            await ctx.report('Pointer moved; waiting for ' + account + ' profile card…');
             for (let i = 0; i < 24; i++) { await ctx.wait(250); target = findProfileCard(account, link); if (target) break; }
           }
           if (!target) {
@@ -88,6 +83,7 @@
             return 'skipped';
           }
           hoverFailures = 0;
+          await ctx.report('Profile card detected for ' + account);
           if (target.following) { await ctx.report('Already following ' + account); return 'skipped'; }
           ctx.check();
           await ctx.report('Following ' + account + ' from the hover card…');
@@ -97,7 +93,7 @@
           });
           scrollNext = true;
           return 'acted';
-        } finally { hover(hoverTarget, false); }
+        } finally { await ctx.unhover().catch(() => {}); }
       }
       ctx.check(); window.scrollBy({ top: Math.max(400, Math.round(window.innerHeight * 0.7)) });
       return 'empty';

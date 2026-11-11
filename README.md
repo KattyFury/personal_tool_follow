@@ -8,7 +8,7 @@ A Chrome extension that opens in Chrome’s native side panel beside your curren
 2. Disable your old X Manager Tampermonkey scripts so both tools do not act at once. Keep the Kaito badge extension enabled if using the Personal filter.
 3. Open `chrome://extensions`, turn on Developer mode, and choose **Load unpacked**.
 4. Select the folder containing `manifest.json` (the `extension` folder if using this repository).
-5. Refresh open X and Binance tabs after installing or reloading the extension.
+5. Allow the added Chrome debugger permission if prompted, then refresh open X and Binance tabs after installing or reloading the extension.
 6. Click the Personal Follow extension icon to open Chrome’s side panel (Chrome 114 or later). Open the required platform tab, choose it in the platform row, save settings, and click Start. Stop cancels pending waits; an already submitted action cannot be undone.
 
 ## X
@@ -24,7 +24,7 @@ Adapted from [your X Manager](https://github.com/KattyFury/tool_personal_xmanage
 
 ## Binance Square
 
-Open the Square feed. The runner hovers a visible author name, waits for that author’s profile card, clicks Follow inside that card, waits the configured delay, then scrolls to the next accounts. Already-followed accounts are skipped. A missing hover card is retried three times (including the avatar/name wrapper), then that account is skipped without reserving a Follow attempt. Three consecutive accounts with missing cards stop the runner so it cannot scroll indefinitely. Page changes or unclear action outcomes still stop immediately.
+Open the Square feed and keep this tab active. Close DevTools on it before starting. The runner uses browser-level mouse input through Chrome debugger to hover a visible author name, waits for that author’s profile card, clicks Follow inside that card, waits the configured delay, then scrolls to the next accounts. Already-followed accounts are skipped. A missing hover card is retried three times (including the avatar/name wrapper), then that account is skipped without reserving a Follow attempt. Three consecutive accounts with missing cards stop the runner so it cannot scroll indefinitely. Page changes or unclear action outcomes still stop immediately.
 
 Defaults: **500 attempts/day**, random **10–30 seconds** between follows. The cap is your configured maximum, not an official Binance limit. Current live feed markup still needs validation; the adapter may find no eligible buttons if Binance changes its layout.
 
@@ -51,3 +51,9 @@ The extension runs directly from `extension/`; no build or runtime dependencies 
 **Validation status:** automated tests use simulated DOM and mocked extension messages. No live follows or unfollows have been performed, and the extension has not been installed into your Chrome. Start with a small cap for live validation.
 
 ![Sidebar preview](docs/sidebar.png)
+
+## Browser hover in 0.3.0
+
+Binance hover no longer uses JavaScript-dispatched mouse events. It uses `Input.dispatchMouseEvent` through the required `debugger` permission, explicitly authorized by the user. Chrome shows its debugging notification while attached. The implementation only permits mouse movement for the active, selected Binance Square run, rejects other tabs, stale tokens, subframes, and invalid coordinates, and detaches on Stop, normal/error completion, navigation, or refreshed content. Dismissing the debugger notification stops the run. It does not move the Windows hardware cursor. X behavior is unchanged.
+
+Status distinguishes requesting pointer movement, successful Chrome input, and detected profile card. `node scripts/check-browser-hover.js` proves the difference between a dispatched JS event and actual CSS hover. `node scripts/check-binance-hover.js` verifies the complete content-runner-to-browser-input path against a local CSS-hover-only fixture, including one confirmed fixture follow and the daily cap. Neither script accesses a live account.
