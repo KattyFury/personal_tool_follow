@@ -29,13 +29,15 @@
     }
     throw Error('Unfollow confirmation was not found. Check the X tab.');
   }
+  // Mass follow runs on any tweet timeline (Home feed, a post's replies, search, lists, profiles), not on account lists or settings.
+  const timeline = () => !/^\/(?:i\/|messages|settings|notifications|compose)|\/(?:followers|verified_followers|following|likes)\/?$/.test(location.pathname);
   PersonalFollow.register({
     id: 'x',
-    allowed: settings => ['x.com', 'twitter.com'].includes(location.hostname) && (settings?.mode === 'follow' ? /\/(?:verified_followers|followers)\/?$/.test(location.pathname) : settings?.mode === 'massfollow' ? /\/status\/\d+/.test(location.pathname) : /\/following\/?$/.test(location.pathname)),
+    allowed: settings => ['x.com', 'twitter.com'].includes(location.hostname) && (settings?.mode === 'follow' ? /\/(?:verified_followers|followers)\/?$/.test(location.pathname) : settings?.mode === 'massfollow' ? timeline() : /\/following\/?$/.test(location.pathname)),
     async prepare(ctx) {
       const mode = ctx.settings.mode;
       if (mode === 'follow' && !/\/(?:verified_followers|followers)\/?$/.test(location.pathname)) throw Error('Open your X followers or verified followers list.');
-      if (mode === 'massfollow' && !/\/status\/\d+/.test(location.pathname)) throw Error('Open an X post with replies.');
+      if (mode === 'massfollow' && !timeline()) throw Error('Open your X Home feed (or any timeline) for Mass follow.');
       if (mode.startsWith('unfollow') && !/\/following\/?$/.test(location.pathname)) throw Error('Open your X following list.');
       if (mode === 'unfollow') {
         let previous = 0, stable = 0;
@@ -52,7 +54,8 @@
     async step(ctx) {
       const mass = ctx.settings.mode === 'massfollow', unfollow = ctx.settings.mode.startsWith('unfollow');
       let cells = [...document.querySelectorAll(mass ? 'article[data-testid="tweet"]' : '[data-testid="UserCell"]')];
-      if (mass) cells = cells.filter(cell => !cell.querySelector('time')?.closest('a')?.getAttribute('href')?.endsWith(location.pathname.split('/').pop()));
+      // On a post page, skip the post itself; on Home every tweet is a candidate.
+      if (mass && /\/status\/\d+/.test(location.pathname)) cells = cells.filter(cell => !cell.querySelector('time')?.closest('a')?.getAttribute('href')?.endsWith(location.pathname.split('/').pop()));
       if (ctx.settings.mode === 'unfollow') cells.reverse();
       const whitelist = ctx.settings.whitelist.split(',').map(s => s.trim());
       for (const cell of cells) {

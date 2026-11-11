@@ -3,7 +3,7 @@ import { defaults, validSettings } from './model.js';
 const $ = id => document.getElementById(id);
 let selected = 'x', settings = structuredClone(defaults), snapshot, dirty = false;
 const uiErrors = {};
-const modes = { follow: 'Follow back', massfollow: 'Mass follow · post replies', unfollow: 'Unfollow · bottom to top', unfollow_topdown: 'Unfollow · top to bottom' };
+const modes = { follow: 'Follow back', massfollow: 'Mass follow · Home feed', unfollow: 'Unfollow · bottom to top', unfollow_topdown: 'Unfollow · top to bottom' };
 async function ask(message) {
   const result = await chrome.runtime.sendMessage(message);
   if (!result?.ok) throw Error(result?.error || 'Extension connection lost.');
@@ -53,7 +53,7 @@ function renderPlatform(p) {
   $(p + '-stop').disabled = !running;
   $(p + '-state').textContent = running ? 'Running' : run ? (run.status === 'Stopped' ? 'Stopped' : 'Check tab') : 'Ready';
   $(p + '-state').className = 'chip' + (running ? ' running' : run && run.status !== 'Stopped' ? ' attention' : '');
-  $(p + '-status').textContent = uiErrors[p] || run?.status || (p === 'x' ? 'Open the list or post for your selected action.' : 'Open the Square feed. Follows visible feed accounts.');
+  $(p + '-status').textContent = uiErrors[p] || run?.status || (p === 'x' ? ({ follow: 'Open your X followers list.', massfollow: 'Open your X Home feed. Hovers verified authors and follows from their card.' }[settings.x.mode] || 'Open your X Following list.') : 'Open the Square feed. Follows visible feed accounts.');
   $(p + '-timer').textContent = run?.nextAt && running ? `${Math.max(0, Math.ceil((run.nextAt - Date.now()) / 1000))}s` : '';
 }
 async function refresh() {

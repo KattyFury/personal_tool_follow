@@ -164,3 +164,17 @@ test('X mass follow skips accounts already followed in the hover card', async ()
   const ctx = context({ settings: { mode: 'massfollow', personal: false, whitelist: '' }, hover: async () => { xCard(dom, 'carol', 'Following'); } });
   assert.equal(await value.step(ctx), 'skipped'); dom.window.close();
 });
+
+test('X mass follow runs on the Home feed and refuses account lists', async () => {
+  const { dom, value } = await adapter('content-x.js', xReply('dave') + xReply('erin'), 'https://x.com/home');
+  const ctx = context({ settings: { mode: 'massfollow', personal: false, whitelist: '' }, hover: async el => { xCard(dom, el.getAttribute('href').slice(1)); },
+    action: async (button, verify) => { button.textContent = 'Following'; assert.equal(verify(), true); } });
+  assert.equal(value.allowed(ctx.settings), true);
+  await value.prepare(ctx);
+  assert.equal(await value.step(ctx), 'acted'); assert.equal(await value.step(ctx), 'acted');
+  dom.window.close();
+  const list = await adapter('content-x.js', '', 'https://x.com/someone/following');
+  assert.equal(list.value.allowed({ mode: 'massfollow' }), false);
+  await assert.rejects(list.value.prepare(context({ settings: { mode: 'massfollow', personal: false, whitelist: '' } })), /Home feed/);
+  list.dom.window.close();
+});
