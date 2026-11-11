@@ -28,8 +28,8 @@ async function handle(message, sender) {
     if (!run || run.tabId !== sender.tab.id || run.token !== message.token) throw Error('Run has stopped.');
     if (message.type === 'movePointer') {
       if (p !== 'binance' || !run.running || (sender.frameId || 0) !== 0) throw Error('Browser hover is unavailable for this request.');
-      await pointer.move(run.tabId, message.point);
-      return { ok: true };
+      await pointer.move(run.tabId, message.point, message.factor ?? 1);
+      return { ok: true, zoom: await pointer.zoom(run.tabId) };
     }
     if (message.type === 'reserve') {
       if (!run.running) throw Error('Run has stopped.');

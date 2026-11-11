@@ -78,7 +78,7 @@
           }
           if (!target) {
             hoverFailures++;
-            if (hoverFailures >= 3) throw Error('Cannot identify profile hover cards for 3 consecutive accounts after retries. Check whether hovering a name opens a profile card; the hover-card HTML may need updating.');
+            if (hoverFailures >= 3) throw Error('Cannot identify profile hover cards for 3 consecutive accounts after retries. Check whether hovering a name opens a profile card; the hover-card HTML may need updating. If the Binance tab is zoomed, press Ctrl+0 there and start again.');
             await ctx.report('Skipped ' + account + ': no matching hover card after 3 tries.');
             return 'skipped';
           }

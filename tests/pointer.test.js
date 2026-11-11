@@ -24,3 +24,16 @@ test('debugger attachment failure stops with an actionable message', async () =>
   const pointer = createPointer({ tabs: { get: async () => ({ active: true, url: 'https://www.binance.com/en/square' }) }, debugger: { attach: async () => { throw Error('Already attached'); } } });
   await assert.rejects(pointer.attach(7), /Close DevTools/);
 });
+
+test('browser hover scales coordinates by the calibration factor and reports tab zoom', async () => {
+  const commands = [];
+  const pointer = createPointer({ tabs: { get: async () => ({ url: 'https://www.binance.com/en/square', active: true }), getZoom: async () => 1.25 }, debugger: {
+    attach: async () => {}, sendCommand: async (...args) => commands.push(args), detach: async () => {}
+  } });
+  await pointer.move(7, { x: 100, y: 200 }, 1.25);
+  assert.equal(commands[0][2].x, 125); assert.equal(commands[0][2].y, 250);
+  assert.equal(await pointer.zoom(7), 1.25);
+  await assert.rejects(pointer.move(7, { x: 1, y: 1 }, 0), /scale/);
+  const plain = createPointer({ tabs: { get: async () => ({}) } });
+  assert.equal(await plain.zoom(7), 1);
+});

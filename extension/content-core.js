@@ -45,8 +45,19 @@
             if (point.x < 0 || point.y < 0 || point.x >= innerWidth || point.y >= innerHeight) throw Error('Hover target is outside the visible feed.');
             const hit = document.elementFromPoint(point.x, point.y);
             if (!hit || (hit !== element && !element.contains(hit))) throw Error('Hover target is covered. Close the overlay and start again.');
-            await ask({ type: 'movePointer', platform: adapter.id, token: run.token, point });
-            check(run);
+            // Debugger input uses viewport DIPs; CSS px differ when browser zoom != 100%. Calibrate once per run.
+            const hovered = () => element.matches(':hover');
+            const tryFactor = async factor => {
+              const reply = await ask({ type: 'movePointer', platform: adapter.id, token: run.token, point, factor });
+              run.zoom = reply.zoom || 1;
+              await new Promise(r => setTimeout(r, 150)); check(run);
+              return hovered();
+            };
+            if (await tryFactor(run.pointerFactor || 1)) return;
+            const factors = [...new Set([1, run.zoom, 1 / run.zoom, devicePixelRatio, 1 / devicePixelRatio].map(f => Math.round(f * 1000) / 1000))].filter(f => f !== (run.pointerFactor || 1) && f >= 0.25 && f <= 5);
+            for (const factor of factors) if (await tryFactor(factor)) { run.pointerFactor = factor; return; }
+            await tryFactor(run.pointerFactor || 1);
+            await report(`Pointer missed the name (zoom ${Math.round(run.zoom * 100)}%, pixel ratio ${devicePixelRatio}). Try Ctrl+0 on the Binance tab.`);
           },
           async unhover() {
             check(run);

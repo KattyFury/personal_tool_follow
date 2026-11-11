@@ -1,6 +1,6 @@
 # Handoff — Personal Follow
 
-Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.4.0.
+Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.4.1.
 
 ## Locations
 
@@ -52,10 +52,13 @@ npm run check
 npx playwright test
 node scripts/check-browser-hover.js
 node scripts/check-binance-hover.js
+node scripts/check-binance-zoom.js
 
 Requires installed Google Chrome for browser checks. Last runs (0.4.0, 2026-11-11): npm test all passed, npm run check passed, 6/6 Playwright UI tests passed (1:2 ratio, fits 400x740, no overflow at 320-390px, yellow Start/segment/running chip). Browser hover proof and integrated CSS-hover-only fixture passed when introduced in 0.3.0. Fixtures use isolated Chrome and no live accounts.
 
 ## Recent commits
+
+- 0.4.1: Binance hover zoom fix. Laptop worked, PC did not: debugger Input.dispatchMouseEvent coordinates are not CSS px when the tab zoom != 100%, so the pointer missed the name. content-core hover() now checks element.matches(':hover') after each move; on a miss it tries factors [1, tab zoom, 1/zoom, devicePixelRatio, 1/dpr] and keeps the working one per run (run.pointerFactor). background returns chrome.tabs.getZoom in the movePointer reply; pointer.move(tabId, point, factor). On total miss the status shows zoom + pixel ratio and suggests Ctrl+0. Simulated in scripts/check-binance-zoom.js (125%). NOT yet confirmed live on the PC.
 
 - 86edc44: side panel redesign — black platform cards, yellow counters + progress meter, running card outlined in yellow, X/Binance segmented settings, Whitelist with inline SF>10 switch, tab picker + Stop/Start on one row, X Action change saves immediately.
 - 13237ef: correct black-yellow-white palette (0.3.2)
@@ -64,7 +67,7 @@ Requires installed Google Chrome for browser checks. Last runs (0.4.0, 2026-11-1
 
 ## Updating
 
-Work in the D: copy or synchronize carefully. Commit/push and update the other copy with git pull --ff-only only after checking local changes. Reload Personal Follow in chrome://extensions, refresh Binance/X, then verify the version pill at the top right of the sidebar (v0.4.0). New permission was explicitly approved; do not repeatedly ask for the same permission. Do not bypass any new approval rejection.
+Work in the D: copy or synchronize carefully. Commit/push and update the other copy with git pull --ff-only only after checking local changes. Reload Personal Follow in chrome://extensions, refresh Binance/X, then verify the version pill at the top right of the sidebar (v0.4.1). New permission was explicitly approved; do not repeatedly ask for the same permission. Do not bypass any new approval rejection.
 
 ## Open items
 
