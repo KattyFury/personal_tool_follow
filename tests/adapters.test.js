@@ -25,14 +25,50 @@ test('X whitelist uses exact handles; missing SF never triggers Personal unfollo
   const { dom, value } = await adapter('content-x.js', '<div data-testid="UserCell"><a href="/alice">Alice</a><span class="signal-avatar-badge__value">0</span><button>Following</button></div><div data-testid="UserCell"><a href="/bob">Bob</a><button>Following</button></div>', 'https://x.com/me/following');
   assert.equal(await value.step(context({ settings: { mode: 'unfollow_topdown', personal: true, whitelist: 'alice' } })), 'empty'); dom.window.close();
 });
-test('Binance scopes to feed cards with identifiable profiles and deduplicates users', async () => {
-  const { dom, value } = await adapter('content-binance.js', '<main><button id="unrelated">Follow</button><article><a href="/en/square/profile/42">Alice</a><button id="valid">Follow</button></article><article><a href="/en/square/profile/42">Alice</a><button>Follow</button></article></main>', 'https://www.binance.com/en/square');
-  const ctx = context({ action: async b => assert.equal(b.id, 'valid') });
-  assert.equal(await value.step(ctx), 'acted'); assert.equal(await value.step(ctx), 'empty'); dom.window.close();
+const binanceHeader = '<div class="card__hd-wrapper"><div class="card__hd"><div class="avatar-name-container avatar-nickname-v2"><div class="avatar-nick-container"><div class="avatar-nick-box"><div class="nick-username"><a href="/en/square/profile/killiankillua" class="nick">Killian Killua</a></div></div></div></div><div class="card__hd-extra"><div role="tooltip" class="bn-bubble"><div class="menu-item"><span>Follow</span></div></div></div></div></div>';
+const binanceURL = 'https://www.binance.com/en/square';
+function showProfile(dom, name = 'killiankillua', following = false) {
+  const card = dom.window.document.createElement('div'); card.className = 'bn-bubble';
+  card.innerHTML = '<a href="/en/square/profile/' + name + '">Profile</a><button>' + (following ? 'Following' : 'Follow') + '</button>';
+  dom.window.document.body.append(card); return card;
+}
+test('Binance hovers supplied nickname markup, follows matching profile, then scrolls', async () => {
+  const { dom, value } = await adapter('content-binance.js', '<main><button id="unrelated">Follow</button>' + binanceHeader + binanceHeader + '</main>', binanceURL);
+  const order = []; let card;
+  showProfile(dom, 'someone_else');
+  dom.window.document.querySelector('.avatar-name-container').addEventListener('mouseover', () => { order.push('hover'); if (!card) card = showProfile(dom); });
+  dom.window.scrollBy = () => order.push('scroll');
+  const ctx = context({ action: async (button, verify) => { assert.equal(button.closest('.bn-bubble'), card); order.push('follow'); button.textContent = 'Following'; assert.equal(verify(), true); } });
+  assert.equal(await value.step(ctx), 'acted'); assert.deepEqual(order, ['hover', 'follow']);
+  assert.equal(await value.step(ctx), 'empty'); assert.equal(order.indexOf('scroll') > order.indexOf('follow'), true);
+  assert.equal(order.filter(x => x === 'hover').length, 1); dom.window.close();
 });
-test('Binance ignores Following buttons and rejects profile pages', async () => {
-  const { dom, value } = await adapter('content-binance.js', '<main><article><a href="/en/square/profile/42">Alice</a><button>Following</button></article></main>', 'https://www.binance.com/en/square/profile/42');
-  await assert.rejects(value.prepare(), /feed/); assert.equal(await value.step(context()), 'empty'); dom.window.close();
+test('Binance waits for a delayed profile card instead of clicking a feed button', async () => {
+  const { dom, value } = await adapter('content-binance.js', '<main>' + binanceHeader + '<button id="feed">Follow</button></main>', binanceURL);
+  let waits = 0, card;
+  assert.equal(await value.step(context({ wait: async ms => { if (ms === 250 && ++waits === 3) card = showProfile(dom); }, action: async button => assert.equal(button.closest('.bn-bubble'), card) })), 'acted');
+  assert.equal(waits, 3); dom.window.close();
+});
+test('Binance stops when no hover card appears and ignores unrelated Follow buttons', async () => {
+  const { dom, value } = await adapter('content-binance.js', '<main>' + binanceHeader + '<button>Follow</button></main>', binanceURL);
+  let scrolled = false; dom.window.scrollBy = () => { scrolled = true; };
+  await assert.rejects(value.step(context()), /hover card did not appear/);
+  assert.equal(scrolled, false); dom.window.close();
+});
+test('Binance skips already-followed users in hover cards', async () => {
+  const { dom, value } = await adapter('content-binance.js', binanceHeader, binanceURL);
+  dom.window.document.querySelector('.nick').addEventListener('mouseover', () => showProfile(dom, 'killiankillua', true), { once: true });
+  assert.equal(await value.step(context()), 'skipped'); dom.window.close();
+});
+test('Binance cancellation during hover wait prevents a follow', async () => {
+  const { dom, value } = await adapter('content-binance.js', binanceHeader, binanceURL);
+  let hovered = false;
+  dom.window.document.querySelector('.nick').addEventListener('mouseover', () => { hovered = true; });
+  await assert.rejects(value.step(context({ wait: async () => { if (hovered) throw Error('Stopped'); } })), /Stopped/); dom.window.close();
+});
+test('Binance rejects profile pages', async () => {
+  const { dom, value } = await adapter('content-binance.js', binanceHeader, binanceURL + '/profile/killiankillua');
+  await assert.rejects(value.prepare(), /feed/); dom.window.close();
 });
 test('Stop cancels an in-flight wait before any click', async () => {
   const dom = new JSDOM('<button>Follow</button>', { url: 'https://x.com/home', runScripts: 'outside-only' });

@@ -7,7 +7,7 @@ The UI tests use installed Google Chrome (`channel: chrome`) with mocked extensi
 Coverage includes:
 
 - X Personal SF threshold and missing-score behavior; whitelist protection.
-- Binance feed scoping, deduplication, Following detection, and rejection of profile pages.
+- Binance nickname-header hover, delayed profile cards, account matching, deduplication, Following detection, hover cancellation, missing-card stop, and rejection of profile pages.
 - Stop cancellation during a pending wait.
 - Unconfirmed actions remain counted and stop the runner.
 - Serialized background reservations enforce the daily cap across tabs.
