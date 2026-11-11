@@ -37,3 +37,11 @@ test('browser hover scales coordinates by the calibration factor and reports tab
   const plain = createPointer({ tabs: { get: async () => ({}) } });
   assert.equal(await plain.zoom(7), 1);
 });
+
+test('browser hover also works on an active X tab but not other sites', async () => {
+  const commands = [];
+  let url = 'https://x.com/someone/status/1';
+  const pointer = createPointer({ tabs: { get: async () => ({ url, active: true }) }, debugger: { sendCommand: async (...args) => commands.push(args) } });
+  await pointer.move(3, { x: 10, y: 20 }); assert.equal(commands.length, 1);
+  url = 'https://example.com/'; await assert.rejects(pointer.move(3, { x: 1, y: 1 }), /limited/);
+});

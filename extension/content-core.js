@@ -39,7 +39,7 @@
           report,
           async hover(element) {
             check(run);
-            if (adapter.id !== 'binance' || !visible(element)) throw Error('Hover target is unavailable.');
+            if (!['binance', 'x'].includes(adapter.id) || !visible(element)) throw Error('Hover target is unavailable.');
             const rect = element.getBoundingClientRect();
             const point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
             if (point.x < 0 || point.y < 0 || point.x >= innerWidth || point.y >= innerHeight) throw Error('Hover target is outside the visible feed.');

@@ -68,19 +68,27 @@
         if (ctx.settings.personal && (unfollow ? sf === null || sf > 10 : !(sf > 10))) continue;
         if (unfollow && !ctx.settings.personal && verified(cell) && /follows you|theo dõi bạn/i.test(cell.textContent)) continue;
         if (mass) {
-          const r = target.link.getBoundingClientRect();
-          ['mouseover', 'mouseenter', 'mousemove'].forEach(type => target.link.dispatchEvent(new MouseEvent(type, { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })));
-          for (let i = 0; i < 20; i++) {
-            await ctx.wait(300);
-            const card = document.querySelector('[data-testid="HoverCard"]');
-            if (!card || !visible(card)) continue;
-            const cardHandle = handle(card);
-            if (!cardHandle || cardHandle.name !== target.name) continue;
-            if ([...card.querySelectorAll('button')].some(following)) return 'skipped';
-            button = [...card.querySelectorAll('button')].find(follow);
-            if (button) break;
+          // Like Binance: move the real browser pointer onto the author's name, wait for X's hover card, follow from it.
+          let found = null;
+          for (let attempt = 0; attempt < 2 && !found && target.link.isConnected; attempt++) {
+            if (attempt) { await ctx.unhover(); await ctx.wait(700); target.link.scrollIntoView({ behavior: 'instant', block: 'center' }); await ctx.wait(400); }
+            const nameTarget = cell.querySelector('[data-testid="User-Name"] a[href="/' + target.link.getAttribute('href').slice(1) + '"]') || target.link;
+            await ctx.report(`Hovering @${target.name} (${attempt + 1}/2)…`);
+            await ctx.hover(nameTarget);
+            for (let i = 0; i < 20 && !found; i++) {
+              await ctx.wait(300);
+              for (const card of document.querySelectorAll('[data-testid="HoverCard"]')) {
+                if (!visible(card)) continue;
+                const cardHandle = handle(card);
+                if (!cardHandle || cardHandle.name !== target.name) continue;
+                if ([...card.querySelectorAll('button')].some(following)) found = 'following';
+                else { const b = [...card.querySelectorAll('button')].find(follow); if (b) found = b; }
+              }
+            }
           }
-          if (!button) return 'skipped';
+          if (!found) { await ctx.unhover(); await ctx.report(`Skipped @${target.name}: no hover card.`); return 'skipped'; }
+          if (found === 'following') { await ctx.unhover(); return 'skipped'; }
+          button = found;
         }
         if (!cell.isConnected || !visible(button)) continue;
         await ctx.report(`${unfollow ? 'Unfollowing' : 'Following'} @${target.name}…`);
@@ -88,7 +96,8 @@
           if (!button.isConnected && !unfollow) return false;
           return unfollow ? (button.isConnected && follow(button)) || (cell.isConnected && [...cell.querySelectorAll('button')].some(follow)) : following(button);
         }, unfollow ? confirm : undefined);
-        document.body.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 10, clientY: 10 }));
+        if (mass) await ctx.unhover().catch(() => {});
+        else document.body.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 10, clientY: 10 }));
         return 'acted';
       }
       window.scrollBy({ top: ctx.settings.mode === 'unfollow' ? -random(600, 900) : random(600, 900) });

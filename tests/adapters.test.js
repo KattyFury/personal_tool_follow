@@ -138,3 +138,29 @@ test('uncertain action is counted once, never confirmed, and stops the run', asy
   assert.match(messages.find(m => m.type === 'status' && m.running === false).status, /outcome is unclear/);
   dom.window.close();
 });
+
+const xPost = 'https://x.com/someone/status/123';
+const xReply = handle => `<article data-testid="tweet"><div data-testid="User-Name"><a href="/${handle}">${handle}</a><svg data-testid="icon-verified"></svg></div><a href="/${handle}/status/999"><time></time></a><p>reply</p></article>`;
+const xCard = (dom, handle, label = 'Follow') => { const card = dom.window.document.createElement('div'); card.dataset.testid = 'HoverCard'; card.innerHTML = `<a href="/${handle}">${handle}</a><button>${label}</button>`; dom.window.document.body.append(card); return card; };
+test('X mass follow hovers the replier name with the real pointer and follows from the matching hover card', async () => {
+  const { dom, value } = await adapter('content-x.js', '<main><button>Follow</button>' + xReply('alice') + '</main>', xPost);
+  const order = []; let card;
+  xCard(dom, 'someone_else');
+  const ctx = context({ settings: { mode: 'massfollow', personal: false, whitelist: '' },
+    hover: async el => { order.push('hover:' + el.getAttribute('href')); card ??= xCard(dom, 'alice'); },
+    unhover: async () => order.push('unhover'),
+    action: async (button, verify) => { assert.equal(button.closest('[data-testid="HoverCard"]'), card); order.push('follow'); button.textContent = 'Following'; assert.equal(verify(), true); } });
+  assert.equal(await value.step(ctx), 'acted');
+  assert.deepEqual(order, ['hover:/alice', 'follow', 'unhover']); dom.window.close();
+});
+test('X mass follow skips when no hover card appears and never clicks other Follow buttons', async () => {
+  const { dom, value } = await adapter('content-x.js', '<main><button>Follow</button>' + xReply('bob') + '</main>', xPost);
+  let hovers = 0;
+  const ctx = context({ settings: { mode: 'massfollow', personal: false, whitelist: '' }, hover: async () => { hovers++; } });
+  assert.equal(await value.step(ctx), 'skipped'); assert.equal(hovers, 2); dom.window.close();
+});
+test('X mass follow skips accounts already followed in the hover card', async () => {
+  const { dom, value } = await adapter('content-x.js', xReply('carol'), xPost);
+  const ctx = context({ settings: { mode: 'massfollow', personal: false, whitelist: '' }, hover: async () => { xCard(dom, 'carol', 'Following'); } });
+  assert.equal(await value.step(ctx), 'skipped'); dom.window.close();
+});

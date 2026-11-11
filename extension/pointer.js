@@ -3,14 +3,15 @@ import { platformFor } from './model.js';
 export function createPointer(api) {
   async function validate(tabId) {
     const tab = await api.tabs.get(tabId);
-    if (platformFor(tab.url) !== 'binance') throw Error('Browser input is limited to the Binance Square source tab.');
-    if (!tab.active) throw Error('Keep the Binance source tab active while running.');
+    const p = platformFor(tab.url);
+    if (p !== 'binance' && p !== 'x') throw Error('Browser input is limited to the Binance Square or X source tab.');
+    if (!tab.active) throw Error(`Keep the ${p === 'x' ? 'X' : 'Binance'} source tab active while running.`);
   }
   return {
     async attach(tabId) {
       await validate(tabId);
       try { await api.debugger.attach({ tabId }, '1.3'); }
-      catch { throw Error('Cannot enable browser hover. Close DevTools on the Binance tab and check the debugger permission.'); }
+      catch { throw Error('Cannot enable browser hover. Close DevTools on the source tab and check the debugger permission.'); }
     },
     async zoom(tabId) {
       try { const z = await api.tabs.getZoom(tabId); return Number.isFinite(z) && z > 0 ? z : 1; } catch { return 1; }

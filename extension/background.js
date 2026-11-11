@@ -15,6 +15,8 @@ async function read() {
 async function sessions() { return (await chrome.storage.session.get('runs')).runs || {}; }
 async function storeRuns(runs) { await chrome.storage.session.set({ runs }); }
 const send = (id, message) => chrome.tabs.sendMessage(id, message);
+// Real browser hover (debugger input) is used by Binance Square and by X mass follow.
+const usesPointer = (p, settings) => p === 'binance' || (p === 'x' && settings?.mode === 'massfollow');
 
 async function handle(message, sender) {
   const p = message.platform;
@@ -22,12 +24,12 @@ async function handle(message, sender) {
     if (platformFor(sender.tab.url) !== p) throw Error('Unsupported page.');
     const runs = await sessions(), run = runs[p];
     if (message.type === 'hello') {
-      if (run?.tabId === sender.tab.id) { delete runs[p]; await storeRuns(runs); if (p === 'binance') await pointer.release(run.tabId); }
+      if (run?.tabId === sender.tab.id) { delete runs[p]; await storeRuns(runs); if (usesPointer(p, run.settings)) await pointer.release(run.tabId); }
       return { ok: true };
     }
     if (!run || run.tabId !== sender.tab.id || run.token !== message.token) throw Error('Run has stopped.');
     if (message.type === 'movePointer') {
-      if (p !== 'binance' || !run.running || (sender.frameId || 0) !== 0) throw Error('Browser hover is unavailable for this request.');
+      if (!usesPointer(p, run.settings) || !run.running || (sender.frameId || 0) !== 0) throw Error('Browser hover is unavailable for this request.');
       await pointer.move(run.tabId, message.point, message.factor ?? 1);
       return { ok: true, zoom: await pointer.zoom(run.tabId) };
     }
@@ -47,7 +49,7 @@ async function handle(message, sender) {
       if (!run.running && message.running) throw Error('Run has stopped.');
       Object.assign(run, { status: String(message.status).slice(0, 240), nextAt: message.nextAt || null, running: !!message.running });
       await storeRuns(runs);
-      if (!run.running && p === 'binance') await pointer.release(run.tabId);
+      if (!run.running && usesPointer(p, run.settings)) await pointer.release(run.tabId);
       return { ok: true };
     }
     throw Error('Unsupported content request.');
@@ -57,7 +59,7 @@ async function handle(message, sender) {
     const state = await read(), runs = await sessions(), tabs = await chrome.tabs.query({});
     for (const [key, run] of Object.entries(runs)) if (!tabs.some(t => t.id === run.tabId && platformFor(t.url) === key)) {
       delete runs[key];
-      if (key === 'binance') await pointer.release(run.tabId);
+      if (usesPointer(key, run.settings)) await pointer.release(run.tabId);
     }
     await storeRuns(runs);
     return { ok: true, ...state, runs, day: dayKey(), tabs: tabs.filter(t => platformFor(t.url)).map(t => ({ id: t.id, platform: platformFor(t.url), title: t.title, url: t.url })) };
@@ -78,14 +80,14 @@ async function handle(message, sender) {
     const token = crypto.randomUUID();
     runs[p] = { tabId: tab.id, token, running: true, status: 'Starting…', settings };
     try {
-      if (p === 'binance') {
+      if (usesPointer(p, settings)) {
         await chrome.tabs.update(tab.id, { active: true });
         await pointer.attach(tab.id);
       }
       await storeRuns(runs);
       const reply = await send(tab.id, { type: 'start', token, settings });
       if (!reply?.ok) throw Error(reply?.error || 'Unable to start.');
-    } catch (error) { delete runs[p]; await storeRuns(runs); if (p === 'binance') await pointer.release(tab.id); throw Error(error.message + ' Refresh the platform tab after installing or reloading the extension.'); }
+    } catch (error) { delete runs[p]; await storeRuns(runs); if (usesPointer(p, settings)) await pointer.release(tab.id); throw Error(error.message + ' Refresh the platform tab after installing or reloading the extension.'); }
     return { ok: true };
   }
   if (message.type === 'stop') {
@@ -94,7 +96,7 @@ async function handle(message, sender) {
     run.running = false; run.status = 'Stopped'; run.nextAt = null;
     try { await send(run.tabId, { type: 'stop' }); } catch {}
     await storeRuns(runs);
-    if (p === 'binance') await pointer.release(run.tabId);
+    if (usesPointer(p, run.settings)) await pointer.release(run.tabId);
     return { ok: true };
   }
   throw Error('Unknown request.');
@@ -111,8 +113,12 @@ chrome.tabs.onRemoved.addListener(id => serial(async () => {
 chrome.tabs.onUpdated.addListener((id, change) => {
   if (!change.url && change.status !== 'loading') return;
   serial(async () => {
-    const runs = await sessions(), run = runs.binance;
-    if (!run || run.tabId !== id) return;
+    const runs = await sessions();
+    const p = Object.keys(runs).find(key => runs[key].tabId === id && usesPointer(key, runs[key].settings));
+    if (!p) return;
+    const run = runs[p];
+    // X is a single-page app: only a real URL change (not a status ping) stops an X run.
+    if (p === 'x' && !change.url) return;
     run.running = false; run.nextAt = null; run.status = 'Page changed. Start again after it loads.';
     await storeRuns(runs);
     try { await send(id, { type: 'stop' }); } catch {}
@@ -120,8 +126,9 @@ chrome.tabs.onUpdated.addListener((id, change) => {
   });
 });
 chrome.debugger.onDetach.addListener(source => serial(async () => {
-  const runs = await sessions(), run = runs.binance;
-  if (!run?.running || run.tabId !== source.tabId) return;
+  const runs = await sessions();
+  const run = Object.entries(runs).find(([key, r]) => r.running && r.tabId === source.tabId && usesPointer(key, r.settings))?.[1];
+  if (!run) return;
   run.running = false; run.nextAt = null; run.status = 'Browser hover disconnected. Close DevTools and start again.';
   await storeRuns(runs);
   try { await send(run.tabId, { type: 'stop' }); } catch {}

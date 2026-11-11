@@ -1,6 +1,6 @@
 # Handoff — Personal Follow
 
-Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.4.2.
+Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.5.0.
 
 ## Locations
 
@@ -26,10 +26,10 @@ Dependency-free Manifest V3 extension. Runtime code lives in extension/. Node de
 
 - manifest.json: sidePanel, storage, tabs, debugger permissions; people emoji icons.
 - background.js: run ownership, serialized daily reservations, settings, debugger lifecycle.
-- pointer.js: actual Chrome Input.dispatchMouseEvent mouseMoved, limited to active selected Binance Square tab.
+- pointer.js: actual Chrome Input.dispatchMouseEvent mouseMoved, limited to the active selected Binance Square or X tab. background usesPointer(p, settings) = Binance, or X in massfollow mode: only those runs attach/release the debugger.
 - content-core.js: cancellable execution, per-action delay, attempt/confirmed counts, cap enforcement, hover bridge and hit testing.
 - content-binance.js: feed author selectors from supplied card header; hover retries; matching profile links OR exact display name plus handle/avatar; excludes menus; three consecutive missing cards stop execution. No JavaScript-dispatched hover in production Binance.
-- content-x.js: X adapter. X hover logic remains adapted from original source.
+- content-x.js: X adapter. Since 0.5.0 Mass follow works like Binance (user request 2026-11-12): on a post's replies it scrolls, moves the REAL browser pointer (debugger) onto each verified replier's name, waits up to 6 s for X's [data-testid=HoverCard] whose handle matches, follows from that card, then moves the pointer away; 2 hover attempts, otherwise skip. Follow back / Unfollow modes still click list buttons directly (no pointer).
 - sidepanel.html/css/js (0.4.0 redesign): app bar with icon + version pill (footer removed). Settings tile (white): segmented X/Binance + Saved/Unsaved indicator + Save; Daily cap | Delay min-max; Whitelist textarea fills the remaining height with the SF>10 Kaito switch in its header (X only); Binance shows a one-line note instead. Platform cards (black #161616, color-scheme dark): logo, title, open link, status chip; yellow attempts counter + progress meter (#<platform>-meter = attempts/limit); X Action select saves the X mode immediately on change and is disabled while running; status line; tab select + Stop + Start in one row. A running card gets a yellow inset outline (.is-running) and a pulsing chip. #x-mode-label is kept as sr-only for JS. Styles use only design/web.css tokens plus --pf-* aliases to the neutral palette.
 - design/: original copied tokens and CSS from repo_personal_design (GitHub repo now named personal_repo_designsystem). Source history/provenance in docs/SOURCES.md.
 - reference/xmanager/: original user scripts retained unchanged for comparison.
@@ -58,6 +58,8 @@ Requires installed Google Chrome for browser checks. Last runs (0.4.0, 2026-11-1
 
 ## Recent commits
 
+- 0.5.0: X Mass follow uses real-pointer hover cards like Binance (see content-x.js above). Verified in jsdom tests only; NOT yet run live on X. Chrome shows its debugger bar on the X tab during Mass follow; keep that tab active.
+
 - 0.4.2: ROOT CAUSE of 'hover works on laptop, not on PC' (confirmed by user 2026-11-11): the Binance tab was too NARROW, so Binance did not show profile hover cards even for a manual hover. Live check on the PC: cards work at 568px and at ~1051px (they can take a few seconds or stay stuck on a spinner; a stale card of the previous author can linger until the pointer leaves). Exact cutoff width not measured. content-binance: refuses to start below 480px; below 600px the skip status and the 3-failure error tell the user to widen the window. The 0.4.1 zoom calibration is kept but was not the cause.
 
 - 0.4.1: Binance hover zoom fix. Laptop worked, PC did not: debugger Input.dispatchMouseEvent coordinates are not CSS px when the tab zoom != 100%, so the pointer missed the name. content-core hover() now checks element.matches(':hover') after each move; on a miss it tries factors [1, tab zoom, 1/zoom, devicePixelRatio, 1/dpr] and keeps the working one per run (run.pointerFactor). background returns chrome.tabs.getZoom in the movePointer reply; pointer.move(tabId, point, factor). On total miss the status shows zoom + pixel ratio and suggests Ctrl+0. Simulated in scripts/check-binance-zoom.js (125%). NOT yet confirmed live on the PC.
@@ -69,7 +71,7 @@ Requires installed Google Chrome for browser checks. Last runs (0.4.0, 2026-11-1
 
 ## Updating
 
-Work in the D: copy or synchronize carefully. Commit/push and update the other copy with git pull --ff-only only after checking local changes. Reload Personal Follow in chrome://extensions, refresh Binance/X, then verify the version pill at the top right of the sidebar (v0.4.2). New permission was explicitly approved; do not repeatedly ask for the same permission. Do not bypass any new approval rejection.
+Work in the D: copy or synchronize carefully. Commit/push and update the other copy with git pull --ff-only only after checking local changes. Reload Personal Follow in chrome://extensions, refresh Binance/X, then verify the version pill at the top right of the sidebar (v0.5.0). New permission was explicitly approved; do not repeatedly ask for the same permission. Do not bypass any new approval rejection.
 
 ## Open items
 
