@@ -15,7 +15,8 @@ test('extension uses the native Chrome sidebar', async () => {
 
 test('defaults keep X timing and Binance requested timing separate', () => {
   assert.deepEqual([defaults.x.dailyLimit, defaults.x.minDelay, defaults.x.maxDelay], [400, 60, 90]);
-  assert.deepEqual([defaults.binance.dailyLimit, defaults.binance.minDelay, defaults.binance.maxDelay], [400, 60, 90]);
+  assert.deepEqual([defaults.binance.dailyLimit, defaults.binance.minDelay, defaults.binance.maxDelay, defaults.binance.mode], [150, 60, 90, 'feed']);
+  assert.throws(() => validSettings('binance', { mode: 'nope' }));
 });
 test('Vietnam midnight resets counters without changing prior data', () => {
   assert.equal(dayKey(new Date('2026-11-11T16:59:59Z')), '2026-11-11');

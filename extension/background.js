@@ -9,14 +9,20 @@ const panelURL = chrome.runtime.getURL('sidepanel.html');
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(error => console.error(error));
 
 async function read() {
-  const value = await chrome.storage.local.get(['settings', 'counts']);
+  const value = await chrome.storage.local.get(['settings', 'counts', 'binanceCap150']);
+  // 0.6.0: Binance default cap lowered 400 -> 150 (user request 2026-11-12); move a still-default 400 once.
+  if (!value.binanceCap150) {
+    if (value.settings?.binance?.dailyLimit === 400) value.settings.binance.dailyLimit = 150;
+    await chrome.storage.local.set({ binanceCap150: true, ...(value.settings ? { settings: value.settings } : {}) });
+  }
   return { settings: { x: { ...defaults.x, ...value.settings?.x }, binance: { ...defaults.binance, ...value.settings?.binance } }, counts: value.counts || {} };
 }
 async function sessions() { return (await chrome.storage.session.get('runs')).runs || {}; }
 async function storeRuns(runs) { await chrome.storage.session.set({ runs }); }
 const send = (id, message) => chrome.tabs.sendMessage(id, message);
-// Real browser hover (debugger input) is used by Binance Square and by X mass follow.
-const usesPointer = (p, settings) => p === 'binance' || (p === 'x' && settings?.mode === 'massfollow');
+// Real browser hover (debugger input) is used by the Binance Square feed and by X mass follow.
+// Binance follow back clicks list buttons directly and needs no debugger.
+const usesPointer = (p, settings) => (p === 'binance' && settings?.mode !== 'followback') || (p === 'x' && settings?.mode === 'massfollow');
 
 async function handle(message, sender) {
   const p = message.platform;

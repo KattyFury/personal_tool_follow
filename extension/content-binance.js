@@ -1,8 +1,11 @@
 (() => {
   const { visible } = PersonalFollow;
-  const isFollow = el => /^(?:\+\s*)?(?:follow|theo dõi)$/i.test(el.textContent.trim());
+  const isFollow = el => /^(?:\+\s*)?(?:follow|follow back|theo dõi|theo dõi lại)$/i.test(el.textContent.trim());
   const isFollowing = el => /^(following|đang theo dõi)$/i.test(el.textContent.trim());
-  const allowed = () => /^\/(?:[a-z]{2}(?:-[A-Za-z]{2})?\/)?square(?:\/|$)/.test(location.pathname) && !/\/(?:profile|creator|post|following|followers)(?:\/|$)/.test(location.pathname);
+  const feed = () => /^\/(?:[a-z]{2}(?:-[A-Za-z]{2})?\/)?square(?:\/|$)/.test(location.pathname) && !/\/(?:profile|creator|post|following|followers)(?:\/|$)/.test(location.pathname);
+  // Follow back runs on a Square followers list: /square/profile/<handle>/followers.
+  const followers = () => /^\/(?:[a-z]{2}(?:-[A-Za-z]{2})?\/)?square\/profile\/[^/]+\/followers\/?$/.test(location.pathname);
+  const allowed = settings => settings?.mode === 'followback' ? followers() : feed();
   const profile = link => {
     try { const url = new URL(link.getAttribute('href'), location.href); return url.hostname === location.hostname ? url.pathname.match(/\/square\/profile\/([^/]+)/)?.[1].toLowerCase() : null; } catch { return null; }
   };
@@ -42,17 +45,45 @@
     return null;
   }
   let scrollNext = false, hoverFailures = 0;
+  // Follow back: each follower row ([data-avatar]) carries its own Follow / Following button. No hover needed.
+  async function followBack(ctx) {
+    for (const row of document.querySelectorAll('[data-avatar]')) {
+      const link = row.querySelector('.nick-username a[href*="/square/profile/"], a[href*="/square/profile/"]');
+      const account = link && profile(link);
+      if (!account || ctx.seen.has(account)) continue;
+      const button = [...row.querySelectorAll('button, [role="button"]')].find(el => visible(el) && (isFollow(el) || isFollowing(el)));
+      if (!button) continue;
+      ctx.seen.add(account);
+      if (isFollowing(button) || button.disabled) continue;
+      ctx.check();
+      row.scrollIntoView({ block: 'center', behavior: 'instant' });
+      await ctx.wait(600);
+      if (!row.isConnected || !visible(button) || !isFollow(button)) continue;
+      await ctx.report('Following back ' + account + '…');
+      await ctx.action(button, () => (button.isConnected && isFollowing(button)) || [...row.querySelectorAll('button, [role="button"]')].some(isFollowing));
+      return 'acted';
+    }
+    ctx.check(); window.scrollTo({ top: document.documentElement.scrollHeight });
+    await ctx.report('Loading more followers…');
+    await ctx.wait(2000);
+    return 'empty';
+  }
   // Binance hides/limits profile hover cards when the tab is narrow (seen on a PC with the side panel open).
   const NARROW = 600;
   const widthHint = () => innerWidth < NARROW ? ` The Binance tab is only ${innerWidth}px wide: hover cards may not appear. Widen the Chrome window (or close other side panels) and start again.` : ' If the Binance tab is zoomed, press Ctrl+0 there and start again.';
   PersonalFollow.register({
     id: 'binance', allowed,
-    async prepare() {
+    async prepare(ctx) {
       scrollNext = false; hoverFailures = 0;
-      if (!allowed()) throw Error('Open the Binance Square feed, not a profile or post.');
+      if (ctx?.settings?.mode === 'followback') {
+        if (!followers()) throw Error('Open your Binance Square followers list (Profile > Followers).');
+        return;
+      }
+      if (!feed()) throw Error('Open the Binance Square feed, not a profile or post.');
       if (innerWidth < 480) throw Error(`The Binance tab is only ${innerWidth}px wide, too narrow for profile hover cards. Widen the Chrome window and start again.`);
     },
     async step(ctx) {
+      if (ctx.settings.mode === 'followback') return followBack(ctx);
       if (scrollNext) { ctx.check(); window.scrollBy({ top: Math.max(300, Math.round(window.innerHeight * 0.6)) }); scrollNext = false; await ctx.wait(1000); }
       const names = [...document.querySelectorAll('.card__hd-wrapper .nick-username a[href*="/square/profile/"], .card__hd .nick-username a[href*="/square/profile/"], article .avatar-name-container a[href*="/square/profile/"], [data-testid="feed-card"] .avatar-name-container a[href*="/square/profile/"]')];
       for (const link of names) {

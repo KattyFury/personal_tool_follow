@@ -43,7 +43,7 @@ function renderPlatform(p) {
   const entries = candidates.map(t => [String(t.id), t.title || t.url]);
   if (JSON.stringify(entries) !== tab.dataset.entries) {
     tab.replaceChildren();
-    for (const [id, title] of entries.length ? entries : [['', p === 'x' ? 'Open an X tab first' : 'Open the Square feed first']]) { const option = document.createElement('option'); option.value = id; option.textContent = title; tab.append(option); }
+    for (const [id, title] of entries.length ? entries : [['', p === 'x' ? 'Open an X tab first' : 'Open Binance Square first']]) { const option = document.createElement('option'); option.value = id; option.textContent = title; tab.append(option); }
     tab.dataset.entries = JSON.stringify(entries);
     if (entries.some(([id]) => id === chosen)) tab.value = chosen;
   }
@@ -53,7 +53,7 @@ function renderPlatform(p) {
   $(p + '-stop').disabled = !running;
   $(p + '-state').textContent = running ? 'Running' : run ? (run.status === 'Stopped' ? 'Stopped' : 'Check tab') : 'Ready';
   $(p + '-state').className = 'chip' + (running ? ' running' : run && run.status !== 'Stopped' ? ' attention' : '');
-  $(p + '-status').textContent = uiErrors[p] || run?.status || (p === 'x' ? ({ follow: 'Open your X followers list.', massfollow: 'Open your X Home feed. Hovers verified authors and follows from their card.' }[settings.x.mode] || 'Open your X Following list.') : 'Open the Square feed. Follows visible feed accounts.');
+  $(p + '-status').textContent = uiErrors[p] || run?.status || (p === 'x' ? ({ follow: 'Open your X followers list.', massfollow: 'Open your X Home feed. Hovers verified authors and follows from their card.' }[settings.x.mode] || 'Open your X Following list.') : settings.binance.mode === 'followback' ? 'Open your Square Followers list. Follows back everyone not followed yet.' : 'Open the Square feed. Follows visible feed accounts.');
   $(p + '-timer').textContent = run?.nextAt && running ? `${Math.max(0, Math.ceil((run.nextAt - Date.now()) / 1000))}s` : '';
 }
 async function refresh() {
@@ -63,6 +63,8 @@ async function refresh() {
     for (const p of ['x', 'binance']) renderPlatform(p);
     $('mode').value = snapshot.runs.x?.running ? snapshot.runs.x.settings.mode : settings.x.mode;
     $('mode').disabled = !!snapshot.runs.x?.running;
+    $('binance-mode').value = snapshot.runs.binance?.running ? snapshot.runs.binance.settings.mode : settings.binance.mode;
+    $('binance-mode').disabled = !!snapshot.runs.binance?.running;
     $('x-mode-label').textContent = modes[snapshot.runs.x?.running ? snapshot.runs.x.settings.mode : settings.x.mode];
   } catch (error) { $('settings-error').textContent = error.message; }
 }
@@ -87,6 +89,10 @@ $('settings-form').addEventListener('input', () => { dirty = true; setSaved(fals
 $('mode').addEventListener('change', async () => {
   try { const values = validSettings('x', { ...settings.x, mode: $('mode').value }); await ask({ type: 'save', platform: 'x', settings: values }); settings.x = values; await refresh(); }
   catch (error) { uiErrors.x = error.message; $('x-status').textContent = error.message; }
+});
+$('binance-mode').addEventListener('change', async () => {
+  try { const values = validSettings('binance', { ...settings.binance, mode: $('binance-mode').value }); await ask({ type: 'save', platform: 'binance', settings: values }); settings.binance = values; delete uiErrors.binance; await refresh(); }
+  catch (error) { uiErrors.binance = error.message; $('binance-status').textContent = error.message; }
 });
 $('settings-form').addEventListener('submit', async event => { event.preventDefault(); try { await save(); await refresh(); } catch (error) { $('settings-error').textContent = error.message; } });
 await refresh(); renderForm();

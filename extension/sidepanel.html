@@ -11,7 +11,7 @@
     <header class="app-bar">
       <img class="app-icon" src="icons/people-32.png" alt="" width="28" height="28">
       <h1>Personal Follow</h1>
-      <span class="version">v0.5.4</span>
+      <span class="version">v0.6.0</span>
     </header>
 
     <div class="board">
@@ -48,7 +48,7 @@
             </div>
             <textarea id="whitelist" spellcheck="false" placeholder="@handle, @handle"></textarea>
           </div>
-          <p id="binance-note" class="settings-note">Binance follows visible Square authors. Only the cap and delay apply.</p>
+          <p id="binance-note" class="settings-note">Feed: follows Square authors via hover cards. Follow back: follows everyone on your Followers list.</p>
           <p id="settings-error" class="error" role="alert"></p>
         </form>
       </aside>
@@ -57,7 +57,7 @@
         <article class="card" data-platform="binance">
           <div class="card-head">
             <span class="logo logo-binance" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.6 2.6L12 8.2 9.4 5.6 12 3Zm-6.4 6.4L8.2 12l-2.6 2.6L3 12l2.6-2.6Zm12.8 0L21 12l-2.6 2.6-2.6-2.6 2.6-2.6ZM12 9.4l2.6 2.6-2.6 2.6L9.4 12 12 9.4Zm0 6.4 2.6 2.6L12 21l-2.6-2.6 2.6-2.6Z"/></svg></span>
-            <div class="title"><h2>Binance Square</h2><p>Follow from the feed</p></div>
+            <div class="title"><h2>Binance Square</h2><p>Feed · follow back</p></div>
             <a class="open-link" href="https://www.binance.com/en/square" target="_blank" rel="noopener" aria-label="Open Binance Square">↗</a>
             <span class="chip" id="binance-state">Ready</span>
           </div>
@@ -66,6 +66,7 @@
             <p><span id="binance-confirmed">0</span> confirmed <span class="countdown" id="binance-timer"></span></p>
           </div>
           <div class="meter" aria-hidden="true"><span id="binance-meter"></span></div>
+          <label class="inline-field">Action<select id="binance-mode"><option value="feed">Follow from feed</option><option value="followback">Follow back</option></select></label>
           <p class="status" id="binance-status" role="status">Open the Square feed to get started.</p>
           <div class="controls">
             <label class="tab-field"><span class="sr-only">Binance browser tab</span><select id="binance-tab"><option value="">Open the Square feed first</option></select></label>

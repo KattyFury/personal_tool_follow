@@ -178,3 +178,18 @@ test('X mass follow runs on the Home feed and refuses account lists', async () =
   await assert.rejects(list.value.prepare(context({ settings: { mode: 'massfollow', personal: false, whitelist: '' } })), /Home feed/);
   list.dom.window.close();
 });
+
+const followerRow = (name, label) => `<div data-avatar="x"><div class="avatar-name-container"><a href="/en/square/profile/${name}" class="avatar-box"></a><div class="nick-username"><a href="/en/square/profile/${name}" class="nick">${name}</a></div></div><div><button><div><span>${label}</span></div></button></div></div>`;
+test('Binance follow back clicks the Follow button of followers not yet followed, without hover', async () => {
+  const url = 'https://www.binance.com/en/square/profile/0xhieu/followers';
+  const { dom, value } = await adapter('content-binance.js', '<main>' + followerRow('alice', 'Following') + followerRow('bob', 'Follow') + followerRow('carol', 'Follow') + '</main>', url);
+  dom.window.scrollTo = () => {};
+  const settings = { mode: 'followback' }, clicked = [];
+  assert.equal(value.allowed(settings), true); assert.equal(value.allowed({ mode: 'feed' }), false);
+  await value.prepare({ settings });
+  const ctx = context({ settings, hover: async () => { throw Error('No hover in follow back'); }, action: async (button, verify) => { clicked.push(button.closest('[data-avatar]').querySelector('.nick').textContent); button.querySelector('span').textContent = 'Following'; assert.equal(verify(), true); } });
+  assert.equal(await value.step(ctx), 'acted'); assert.equal(await value.step(ctx), 'acted'); assert.equal(await value.step(ctx), 'empty');
+  assert.deepEqual(clicked, ['bob', 'carol']); dom.window.close();
+  const feed = await adapter('content-binance.js', '', binanceURL);
+  await assert.rejects(feed.value.prepare({ settings }), /followers list/i); feed.dom.window.close();
+});

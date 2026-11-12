@@ -21,7 +21,7 @@ test.beforeEach(async ({ page }) => {
     } } };
   }, defaults);
   await page.goto('http://127.0.0.1:4173/sidepanel.html');
-  await expect(page.locator('#dailyLimit')).toHaveValue('400');
+  await expect(page.locator('#dailyLimit')).toHaveValue('150');
 });
 
 test('vertical layout supports settings and start/stop', async ({ page }) => {
@@ -37,7 +37,9 @@ test('vertical layout supports settings and start/stop', async ({ page }) => {
   expect(layout.height).toBeLessThanOrEqual(900); expect(layout.width).toBe(1280);
   await page.screenshot({ path: 'test-results/dashboard-desktop.png', fullPage: true });
   await page.getByRole('button', { name: 'Binance', exact: true }).click();
-  await expect(page.locator('#dailyLimit')).toHaveValue('400');
+  await expect(page.locator('#dailyLimit')).toHaveValue('150');
+  await page.locator('#binance-mode').selectOption('followback');
+  await expect(page.locator('#binance-status')).toContainText('Followers list');
   await expect(page.locator('#minDelay')).toHaveValue('60'); await expect(page.locator('#maxDelay')).toHaveValue('90');
   await page.locator('#dailyLimit').fill('450'); await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.locator('#binance-count')).toHaveText('0 / 450');

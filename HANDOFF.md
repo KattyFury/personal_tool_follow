@@ -1,6 +1,6 @@
 # Handoff — Personal Follow
 
-Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.5.4.
+Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.6.0.
 
 ## Locations
 
@@ -19,7 +19,8 @@ Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.5.4.
 - Single compact screen. X, Binance, Other platforms placeholder.
 - X: adapted from the old X Manager userscripts (GitHub repo tool_personal_xmanager was DELETED 2026-11-11; the only copy is reference/xmanager/ here, do not delete it); Personal SF >10 filter and Standard option; four action modes and whitelist.
 - X Rest controls AND batch-rest behavior removed in 0.3.1. Whitelist has the freed space. Keep per-action delays.
-- Binance: hover an author name, open the matching profile card, follow, wait 60–90 seconds, then scroll. Daily cap 400 by default (changed 2026-11-12).
+- Binance: hover an author name, open the matching profile card, follow, wait 60–90 seconds, then scroll. Daily cap 150 by default (lowered from 400 on 2026-11-12; background migrates a stored 400 to 150 once, flag binanceCap150).
+- Binance Follow back (0.6.0): Action select on the Binance card (feed | followback). followback runs only on /square/profile/<handle>/followers; each row [data-avatar] has its own Follow/Following button, clicked directly (no hover, no debugger: usesPointer is false). Scrolls the window to load more (20 per page). Selectors checked read-only on the live page 2026-11-12; no live follow made by Claude.
 - Keep communication brief. User explicitly approved the debugger permission for real hover.
 
 ## Current implementation
@@ -38,7 +39,7 @@ Dependency-free Manifest V3 extension. Runtime code lives in extension/. Node de
 
 ## Important behavior
 
-Daily caps count attempts reserved BEFORE clicking; confirmed outcomes tracked separately. Counters reset at midnight Vietnam time. X defaults 400/day, 60–90 sec. Binance defaults 400/day, 60–90 sec. These are configured caps, not verified platform limits. Legacy userscript settings/counters are not migrated automatically. Disable legacy X Manager scripts while using this extension.
+Daily caps count attempts reserved BEFORE clicking; confirmed outcomes tracked separately. Counters reset at midnight Vietnam time. X defaults 400/day, 60–90 sec. Binance defaults 150/day, 60–90 sec. These are configured caps, not verified platform limits. Legacy userscript settings/counters are not migrated automatically. Disable legacy X Manager scripts while using this extension.
 
 Binance uses Chrome debugger browser input because dispatchEvent does not produce actual CSS hover. This does not move the Windows hardware cursor. Keep Binance source tab active; close its DevTools. Chrome shows its debugger notification. Stop, completion/errors, navigation and disconnect stop/detach the session. Rejects non-owner tabs, stale tokens, subframes, invalid coordinates and non-Square routes. Follow clicks currently use DOM button.click with outcome verification; actual browser input is used for hover.
 
@@ -59,6 +60,8 @@ node scripts/check-binance-zoom.js
 Requires installed Google Chrome for browser checks. Last runs (0.4.0, 2026-11-11): npm test all passed, npm run check passed, 6/6 Playwright UI tests passed (1:2 ratio, fits 400x740, no overflow at 320-390px, yellow Start/segment/running chip). Browser hover proof and integrated CSS-hover-only fixture passed when introduced in 0.3.0. Fixtures use isolated Chrome and no live accounts.
 
 ## Recent commits
+
+- 0.6.0: Binance Follow back mode + Binance cap 150.
 
 - 0.5.1: X Mass follow no longer requires opening a post; user wants it to scroll the Home feed (2026-11-12). Verified-only filter and SF>10 option unchanged.
 
