@@ -8,8 +8,16 @@
     const match = value?.textContent.replace(/,/g, '').match(/(\d+(?:\.\d+)?)\s*([km])?/i);
     return match ? Math.round(parseFloat(match[1]) * (match[2] ? (/k/i.test(match[2]) ? 1e3 : 1e6) : 1)) : null;
   };
-  const verified = el => !!el.querySelector('svg[aria-label="Verified account"], svg[aria-label="Tài khoản đã xác minh"], [data-testid="icon-verified"], [data-testid="verifiedIcon"]');
+  const verified = el => !!el.querySelector('svg[aria-label="Verified account"], svg[aria-label="Tài khoản đã xác minh"], svg[aria-label="Tài khoản đã xác nhận"], [data-testid="icon-verified"], [data-testid="verifiedIcon"]');
   const ad = el => ['Promoted', 'Quảng cáo', 'Được quảng bá'].some(t => el.textContent.includes(t));
+  // People only: X gives organisations (gold check) square avatars; people keep round ones.
+  const gold = el => [...el.querySelectorAll('[data-testid="icon-verified"]')].some(icon => icon.querySelector('linearGradient'));
+  const person = el => {
+    if (gold(el)) return false;
+    const avatar = el.querySelector('[data-testid^="UserAvatar-Container"]');
+    if (!avatar) return true;
+    return [avatar, ...avatar.querySelectorAll('a, a div')].some(node => /^(?:9999px|50%)$/.test(getComputedStyle(node).borderRadius));
+  };
   function handle(el) {
     const links = el.querySelectorAll('[data-testid="User-Name"] a[href^="/"], a[href^="/"]');
     for (const link of links) if (/^\/[a-z0-9_]{1,15}$/i.test(link.getAttribute('href'))) return { link, name: link.getAttribute('href').slice(1).toLowerCase() };
@@ -31,13 +39,15 @@
   }
   // Mass follow runs on any tweet timeline (Home feed, a post's replies, search, lists, profiles), not on account lists or settings.
   const timeline = () => !/^\/(?:i\/|messages|settings|notifications|compose)|\/(?:followers|verified_followers|following|likes)\/?$/.test(location.pathname);
+  // "Who to follow" list (x.com/i/connect_people): each UserCell has its own Follow button, no hover needed.
+  const connect = () => /^\/i\/connect_people\/?$/.test(location.pathname);
   PersonalFollow.register({
     id: 'x',
-    allowed: settings => ['x.com', 'twitter.com'].includes(location.hostname) && (settings?.mode === 'follow' ? /\/(?:verified_followers|followers)\/?$/.test(location.pathname) : settings?.mode === 'massfollow' ? timeline() : /\/following\/?$/.test(location.pathname)),
+    allowed: settings => ['x.com', 'twitter.com'].includes(location.hostname) && (settings?.mode === 'follow' ? /\/(?:verified_followers|followers)\/?$/.test(location.pathname) : settings?.mode === 'massfollow' ? timeline() || connect() : /\/following\/?$/.test(location.pathname)),
     async prepare(ctx) {
       const mode = ctx.settings.mode;
       if (mode === 'follow' && !/\/(?:verified_followers|followers)\/?$/.test(location.pathname)) throw Error('Open your X followers or verified followers list.');
-      if (mode === 'massfollow' && !timeline()) throw Error('Open your X Home feed (or any timeline) for Mass follow.');
+      if (mode === 'massfollow' && !timeline() && !connect()) throw Error('Open x.com/i/connect_people (Who to follow) or your X Home feed for Mass follow.');
       if (mode.startsWith('unfollow') && !/\/following\/?$/.test(location.pathname)) throw Error('Open your X following list.');
       if (mode === 'unfollow') {
         let previous = 0, stable = 0;
@@ -52,7 +62,8 @@
       }
     },
     async step(ctx) {
-      const mass = ctx.settings.mode === 'massfollow', unfollow = ctx.settings.mode.startsWith('unfollow');
+      const list = ctx.settings.mode === 'massfollow' && connect();
+      const mass = ctx.settings.mode === 'massfollow' && !list, unfollow = ctx.settings.mode.startsWith('unfollow');
       let cells = [...document.querySelectorAll(mass ? 'article[data-testid="tweet"]' : '[data-testid="UserCell"]')];
       // On a post page, skip the post itself; on Home every tweet is a candidate.
       if (mass && /\/status\/\d+/.test(location.pathname)) cells = cells.filter(cell => !cell.querySelector('time')?.closest('a')?.getAttribute('href')?.endsWith(location.pathname.split('/').pop()));
@@ -64,6 +75,7 @@
         if (!target || ctx.seen.has(target.name) || ad(cell)) continue;
         ctx.seen.add(target.name);
         if (mass && !verified(cell)) continue;
+        if ((mass || list) && !person(cell)) continue;
         let button = [...cell.querySelectorAll('button')].find(unfollow ? following : follow);
         if (!mass && !button) continue;
         if (unfollow && whitelist.includes(target.name)) continue;

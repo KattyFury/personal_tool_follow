@@ -193,3 +193,20 @@ test('Binance follow back clicks the Follow button of followers not yet followed
   const feed = await adapter('content-binance.js', '', binanceURL);
   await assert.rejects(feed.value.prepare({ settings }), /followers list/i); feed.dom.window.close();
 });
+
+const whoCell = (handle, sf, { round = true, gold = false } = {}) => `<div data-testid="UserCell"><div data-testid="UserAvatar-Container-${handle}"><a href="/${handle}"><div style="border-radius:${round ? '9999px' : '0px'}"></div></a></div><span class="signal-avatar-badge__value">${sf}</span><a href="/${handle}">${handle}</a>${gold ? '<svg data-testid="icon-verified"><linearGradient></linearGradient></svg>' : ''}<button data-testid="1-follow">Theo dõi</button></div>`;
+test('X mass follow on Who to follow clicks people with SF > 10 directly, skipping projects and low SF', async () => {
+  const html = whoCell('project', '500', { round: false, gold: true }) + whoCell('squareorg', '90', { round: false }) + whoCell('lowsf', '10') + whoCell('nosf', 'N/A') + whoCell('alice', '1,346');
+  const { dom, value } = await adapter('content-x.js', html, 'https://x.com/i/connect_people?show_topics=false');
+  const settings = { mode: 'massfollow', personal: true, whitelist: '' }, clicked = [];
+  assert.equal(value.allowed(settings), true); await value.prepare(context({ settings }));
+  const ctx = context({ settings, hover: async () => { throw Error('No hover on Who to follow'); }, action: async (button, verify) => { clicked.push(button.closest('[data-testid="UserCell"]').querySelector('a').getAttribute('href')); button.textContent = 'Đang theo dõi'; assert.equal(verify(), true); } });
+  assert.equal(await value.step(ctx), 'acted'); assert.equal(await value.step(ctx), 'empty');
+  assert.deepEqual(clicked, ['/alice']); dom.window.close();
+});
+test('X recognises the Vietnamese "xác nhận" verified label', async () => {
+  const { dom, value } = await adapter('content-x.js', '<article data-testid="tweet"><div data-testid="User-Name"><a href="/vn">vn</a><svg aria-label="Tài khoản đã xác nhận"></svg></div></article>', 'https://x.com/home');
+  let hovered = false;
+  await value.step(context({ settings: { mode: 'massfollow', personal: false, whitelist: '' }, hover: async () => { hovered = true; } }));
+  assert.equal(hovered, true); dom.window.close();
+});
