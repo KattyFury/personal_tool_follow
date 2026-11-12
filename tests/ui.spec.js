@@ -21,12 +21,12 @@ test.beforeEach(async ({ page }) => {
     } } };
   }, defaults);
   await page.goto('http://127.0.0.1:4173/sidepanel.html');
-  await expect(page.locator('#dailyLimit')).toHaveValue('400');
+  await expect(page.locator('#dailyLimit')).toHaveValue('500');
 });
 
 test('vertical layout supports settings and start/stop', async ({ page }) => {
   expect(await page.locator('#x-start').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(245, 179, 1)');
-  expect(await page.locator('#settings-x').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(245, 179, 1)');
+  expect(await page.locator('#settings-binance').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(245, 179, 1)');
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const layout = await page.evaluate(() => {

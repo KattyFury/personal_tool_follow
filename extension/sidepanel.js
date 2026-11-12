@@ -1,7 +1,7 @@
 import { defaults, validSettings } from './model.js';
 
 const $ = id => document.getElementById(id);
-let selected = 'x', settings = structuredClone(defaults), snapshot, dirty = false;
+let selected = 'binance', settings = structuredClone(defaults), snapshot, dirty = false;
 const uiErrors = {};
 const modes = { follow: 'Follow back', massfollow: 'Mass follow · Home feed', unfollow: 'Unfollow · bottom to top', unfollow_topdown: 'Unfollow · top to bottom' };
 async function ask(message) {

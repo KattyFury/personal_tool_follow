@@ -11,7 +11,7 @@
     <header class="app-bar">
       <img class="app-icon" src="icons/people-32.png" alt="" width="28" height="28">
       <h1>Personal Follow</h1>
-      <span class="version">v0.5.1</span>
+      <span class="version">v0.5.2</span>
     </header>
 
     <div class="board">
@@ -19,8 +19,8 @@
         <h2 id="settings-title" class="sr-only">Settings</h2>
         <div class="settings-bar">
           <div class="segmented" role="group" aria-label="Settings platform">
-            <button id="settings-x" type="button" aria-pressed="true">X</button>
-            <button id="settings-binance" type="button" aria-pressed="false">Binance</button>
+            <button id="settings-binance" type="button" aria-pressed="true">Binance</button>
+            <button id="settings-x" type="button" aria-pressed="false">X</button>
           </div>
           <span id="save-state" class="save-state" role="status">Saved</span>
           <button class="primary" type="submit" form="settings-form">Save</button>
@@ -37,10 +37,10 @@
             </div>
           </fieldset>
 
-          <div id="x-whitelist" class="whitelist-field">
+          <div id="x-whitelist" class="whitelist-field" hidden>
             <div class="whitelist-head">
               <label for="whitelist">Whitelist</label>
-              <div id="x-settings">
+              <div id="x-settings" hidden>
                 <label class="switch" title="Follow only SF > 10. Preserve SF > 10 when unfollowing; skip missing SF. Requires Kaito.">
                   <input type="checkbox" id="personal" role="switch"><span class="switch-track" aria-hidden="true"></span>SF &gt; 10 · Kaito
                 </label>
@@ -48,12 +48,32 @@
             </div>
             <textarea id="whitelist" spellcheck="false" placeholder="@handle, @handle"></textarea>
           </div>
-          <p id="binance-note" class="settings-note" hidden>Binance follows visible Square authors. Only the cap and delay apply.</p>
+          <p id="binance-note" class="settings-note">Binance follows visible Square authors. Only the cap and delay apply.</p>
           <p id="settings-error" class="error" role="alert"></p>
         </form>
       </aside>
 
       <section class="platforms" aria-label="Platform controls">
+        <article class="card" data-platform="binance">
+          <div class="card-head">
+            <span class="logo logo-binance" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.6 2.6L12 8.2 9.4 5.6 12 3Zm-6.4 6.4L8.2 12l-2.6 2.6L3 12l2.6-2.6Zm12.8 0L21 12l-2.6 2.6-2.6-2.6 2.6-2.6ZM12 9.4l2.6 2.6-2.6 2.6L9.4 12 12 9.4Zm0 6.4 2.6 2.6L12 21l-2.6-2.6 2.6-2.6Z"/></svg></span>
+            <div class="title"><h2>Binance Square</h2><p>Follow from the feed</p></div>
+            <a class="open-link" href="https://www.binance.com/en/square" target="_blank" rel="noopener" aria-label="Open Binance Square">↗</a>
+            <span class="chip" id="binance-state">Ready</span>
+          </div>
+          <div class="metric">
+            <strong id="binance-count">0 / 500</strong>
+            <p><span id="binance-confirmed">0</span> confirmed <span class="countdown" id="binance-timer"></span></p>
+          </div>
+          <div class="meter" aria-hidden="true"><span id="binance-meter"></span></div>
+          <p class="status" id="binance-status" role="status">Open the Square feed to get started.</p>
+          <div class="controls">
+            <label class="tab-field"><span class="sr-only">Binance browser tab</span><select id="binance-tab"><option value="">Open the Square feed first</option></select></label>
+            <button class="secondary" id="binance-stop" disabled>Stop</button>
+            <button class="primary" id="binance-start">Start</button>
+          </div>
+        </article>
+
         <article class="card" data-platform="x">
           <div class="card-head">
             <span class="logo logo-x" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.77L17.75 3Zm-1.08 16.18h1.7L7.4 4.73H5.58l11.09 14.45Z"/></svg></span>
@@ -72,26 +92,6 @@
             <label class="tab-field"><span class="sr-only">X browser tab</span><select id="x-tab"><option value="">Open an X tab first</option></select></label>
             <button class="secondary" id="x-stop" disabled>Stop</button>
             <button class="primary" id="x-start">Start</button>
-          </div>
-        </article>
-
-        <article class="card" data-platform="binance">
-          <div class="card-head">
-            <span class="logo logo-binance" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.6 2.6L12 8.2 9.4 5.6 12 3Zm-6.4 6.4L8.2 12l-2.6 2.6L3 12l2.6-2.6Zm12.8 0L21 12l-2.6 2.6-2.6-2.6 2.6-2.6ZM12 9.4l2.6 2.6-2.6 2.6L9.4 12 12 9.4Zm0 6.4 2.6 2.6L12 21l-2.6-2.6 2.6-2.6Z"/></svg></span>
-            <div class="title"><h2>Binance Square</h2><p>Follow from the feed</p></div>
-            <a class="open-link" href="https://www.binance.com/en/square" target="_blank" rel="noopener" aria-label="Open Binance Square">↗</a>
-            <span class="chip" id="binance-state">Ready</span>
-          </div>
-          <div class="metric">
-            <strong id="binance-count">0 / 500</strong>
-            <p><span id="binance-confirmed">0</span> confirmed <span class="countdown" id="binance-timer"></span></p>
-          </div>
-          <div class="meter" aria-hidden="true"><span id="binance-meter"></span></div>
-          <p class="status" id="binance-status" role="status">Open the Square feed to get started.</p>
-          <div class="controls">
-            <label class="tab-field"><span class="sr-only">Binance browser tab</span><select id="binance-tab"><option value="">Open the Square feed first</option></select></label>
-            <button class="secondary" id="binance-stop" disabled>Stop</button>
-            <button class="primary" id="binance-start">Start</button>
           </div>
         </article>
 

@@ -1,6 +1,6 @@
 # Handoff — Personal Follow
 
-Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.5.1.
+Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.5.2.
 
 ## Locations
 
@@ -12,6 +12,7 @@ Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.5.1.
 ## User requirements — follow these
 
 - Native Chrome side panel, opened by extension toolbar icon. No full-tab dashboard.
+- Binance Square is the DEFAULT / primary platform (0.5.2, user request 2026-11-12): settings open on Binance, Binance button first in the segmented control, Binance card above X.
 - VERTICAL layout: settings TOP one third; platform functions BOTTOM two thirds.
 - Design is BLACK, YELLOW #F5B301, WHITE, with neutral greys. Do not propose blue. Use the supplied design system product palette (0xhieu-xyz), not its generic blue defaults.
 - Single compact screen. X, Binance, Other platforms placeholder.
