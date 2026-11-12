@@ -88,3 +88,15 @@ test('fits one sidebar screen at 400 by 740', async ({ page }) => {
   expect(layout.settingsFits).toBe(true); expect(layout.buttonsFit).toBe(true);
   await page.screenshot({ path: 'test-results/sidebar-compact.png', fullPage: true });
 });
+
+for (const height of [560, 440, 360]) test(`short panel ${height}px scrolls instead of overlapping`, async ({ page }) => {
+  await page.setViewportSize({ width: 400, height });
+  for (const platform of ['Binance', 'X']) {
+    await page.getByRole('button', { name: platform, exact: true }).click();
+    const clipped = await page.locator('.settings, .card').evaluateAll(els => els.filter(el => !el.hidden && el.scrollHeight > el.clientHeight + 1).map(el => el.className || el.id));
+    expect(clipped).toEqual([]);
+    const boxes = await page.locator('.settings, .card, .future').evaluateAll(els => els.map(el => el.getBoundingClientRect()).map(r => [r.top, r.bottom]));
+    for (let i = 1; i < boxes.length; i++) expect(boxes[i][0]).toBeGreaterThanOrEqual(boxes[i - 1][1]);
+    if (platform === 'X') expect((await page.locator('#whitelist').boundingBox()).height).toBeGreaterThanOrEqual(48);
+  }
+});

@@ -1,5 +1,6 @@
 /* Personal Follow side panel — black / yellow / white, tokens from design/web.css */
 :root {
+  --pf-tile-pad: var(--ds-space-12);
   --pf-card: var(--ds-palette-neutral-900);
   --pf-card-raised: var(--ds-palette-neutral-800);
   --pf-card-line: var(--ds-palette-neutral-700);
@@ -17,8 +18,11 @@ p { color: var(--ds-color-grey); font-size: var(--ds-type-note-size); line-heigh
 [hidden] { display: none !important; }
 
 /* Frame */
-.frame { height: 100dvh; max-width: 760px; margin: auto; padding: var(--ds-space-12); display: flex; flex-direction: column; gap: var(--ds-space-8); }
-.board { flex: 1; min-height: 0; display: grid; grid-template-rows: minmax(0,1fr) minmax(0,2fr); gap: var(--ds-space-8); }
+.frame { min-height: 100dvh; max-width: 760px; margin: auto; padding: var(--ds-space-12); display: flex; flex-direction: column; gap: var(--ds-space-8); }
+.board { flex: 1; display: flex; flex-direction: column; gap: var(--ds-space-8); }
+.board > .settings { flex: 1 1 0; }
+/* settings tile cannot shrink below its own padding, so the platforms basis carries twice that padding to keep an exact 1:2 split */
+.board > .platforms { flex: 2 1 calc(4 * var(--pf-tile-pad)); }
 
 /* App bar */
 .app-bar { flex: none; display: flex; align-items: center; gap: var(--ds-space-8); }
@@ -27,8 +31,8 @@ h1 { font-size: var(--ds-type-header-size); line-height: var(--ds-type-header-li
 .version { margin-left: auto; padding: 0 var(--ds-space-8); border-radius: var(--ds-bento-radius-pill); background: var(--ds-bento-tile); color: var(--ds-color-grey); font-size: var(--ds-type-label-size); line-height: 22px; font-weight: 600; }
 
 /* Settings tile */
-.tile { min-width: 0; background: var(--ds-bento-tile); border-radius: var(--ds-bento-radius-tile); padding: var(--ds-space-12); }
-.settings { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: var(--ds-space-8); }
+.tile { min-width: 0; background: var(--ds-bento-tile); border-radius: var(--ds-bento-radius-tile); padding: var(--pf-tile-pad); }
+.settings { display: flex; flex-direction: column; gap: var(--ds-space-8); }
 .settings-bar { display: flex; align-items: center; gap: var(--ds-space-8); }
 .segmented { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; background: var(--ds-bento-canvas); border-radius: var(--ds-bento-radius-pill); }
 .segmented button { min-height: 26px; min-width: 64px; padding: 0 var(--ds-space-12); border-radius: var(--ds-bento-radius-pill); background: transparent; color: var(--ds-color-grey); font-size: var(--ds-type-label-size); line-height: var(--ds-type-label-line); }
@@ -37,10 +41,10 @@ h1 { font-size: var(--ds-type-header-size); line-height: var(--ds-type-header-li
 .save-state.unsaved { color: var(--ds-color-ink); font-weight: 600; }
 .save-state.unsaved::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--ds-accent); vertical-align: middle; }
 
-#settings-form { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,2fr); grid-template-rows: auto minmax(0,1fr); gap: var(--ds-space-8) var(--ds-space-12); align-content: start; }
+#settings-form { flex: 1; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,2fr); grid-template-rows: auto minmax(auto,1fr); gap: var(--ds-space-8) var(--ds-space-12); align-content: start; }
 .field { min-width: 0; }
 .whitelist-field, .settings-note, .error { grid-column: 1 / -1; }
-.whitelist-field { min-height: 0; display: flex; flex-direction: column; }
+.whitelist-field { display: flex; flex-direction: column; }
 .whitelist-head { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-8); }
 label, legend { display: block; font-size: var(--ds-type-label-size); line-height: var(--ds-type-label-line); font-weight: 600; }
 fieldset { padding: 0; margin: 0; border: 0; min-width: 0; }
@@ -71,8 +75,8 @@ select { appearance: none; padding-right: 26px; background-image: var(--pf-chevr
 .switch input:focus-visible + .switch-track { outline: 2px solid var(--ds-accent); outline-offset: 2px; }
 
 /* Platform cards */
-.platforms { min-height: 0; display: flex; flex-direction: column; gap: var(--ds-space-8); }
-.card { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: var(--ds-space-8); padding: var(--ds-space-12); border-radius: var(--ds-bento-radius-tile); background: var(--pf-card); color: var(--ds-palette-neutral-0); color-scheme: dark; box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .2s; }
+.platforms { display: flex; flex-direction: column; gap: var(--ds-space-8); }
+.card { flex: 1 1 0; display: flex; flex-direction: column; gap: var(--ds-space-8); padding: var(--ds-space-12); border-radius: var(--ds-bento-radius-tile); background: var(--pf-card); color: var(--ds-palette-neutral-0); color-scheme: dark; box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .2s; }
 .card[data-platform="x"] { flex-grow: 1.2; }
 .card.is-running { box-shadow: inset 0 0 0 2px var(--ds-accent); }
 .card p { color: var(--pf-card-muted); }
@@ -126,7 +130,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 /* Narrow side panel */
 @media (max-width: 359px) {
-  .frame, .tile, .card { padding: var(--ds-space-8); }
+  :root { --pf-tile-pad: var(--ds-space-8); }
+  .frame, .card { padding: var(--ds-space-8); }
   .segmented button { min-width: 0; padding: 0 var(--ds-space-8); }
   #settings-form { gap: var(--ds-space-8); }
   .controls { gap: var(--ds-space-4); }
