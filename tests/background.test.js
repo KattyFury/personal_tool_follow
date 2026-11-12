@@ -5,7 +5,7 @@ import { dayKey } from '../extension/model.js';
 test('background serializes simultaneous reservations and rejects non-owner tabs', async () => {
   let listener;
   const input = [];
-  const data = { local: { counts: { binance: { day: dayKey(), attempts: 499, confirmed: 0 } } }, session: {} };
+  const data = { local: { counts: { binance: { day: dayKey(), attempts: 399, confirmed: 0 } } }, session: {} };
   const storage = key => ({ get: async () => structuredClone(data[key]), set: async next => { await new Promise(resolve => setTimeout(resolve, 2)); Object.assign(data[key], structuredClone(next)); } });
   globalThis.chrome = {
     sidePanel: { setPanelBehavior: async value => { assert.equal(value.openPanelOnActionClick, true); } },
@@ -25,7 +25,7 @@ test('background serializes simultaneous reservations and rejects non-owner tabs
   assert.equal((await request({ type: 'movePointer', platform: 'binance', token, point: { x: 100, y: 200 } }, { tab: { id: 8, url: owner.tab.url } })).ok, false);
   assert.equal((await request({ type: 'movePointer', platform: 'binance', token, point: { x: 100, y: 200 } }, { ...owner, frameId: 1 })).ok, false);
   const replies = await Promise.all([1, 2].map(() => request({ type: 'reserve', platform: 'binance', token }, owner)));
-  assert.equal(replies.filter(r => r.ok).length, 1); assert.equal(data.local.counts.binance.attempts, 500);
+  assert.equal(replies.filter(r => r.ok).length, 1); assert.equal(data.local.counts.binance.attempts, 400);
   assert.equal((await request({ type: 'reserve', platform: 'binance', token }, { tab: { id: 8, url: owner.tab.url } })).ok, false);
   assert.equal((await request({ type: 'start', platform: 'binance', tabId: 8 }, { url: 'chrome-extension://test/sidepanel.html' })).ok, false);
   await request({ type: 'stop', platform: 'binance' }, { url: 'chrome-extension://test/sidepanel.html' });

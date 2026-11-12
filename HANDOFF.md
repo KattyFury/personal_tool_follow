@@ -1,6 +1,6 @@
 # Handoff — Personal Follow
 
-Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.5.2.
+Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.5.3.
 
 ## Locations
 
@@ -18,7 +18,7 @@ Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.5.2.
 - Single compact screen. X, Binance, Other platforms placeholder.
 - X: adapted from the old X Manager userscripts (GitHub repo tool_personal_xmanager was DELETED 2026-11-11; the only copy is reference/xmanager/ here, do not delete it); Personal SF >10 filter and Standard option; four action modes and whitelist.
 - X Rest controls AND batch-rest behavior removed in 0.3.1. Whitelist has the freed space. Keep per-action delays.
-- Binance: hover an author name, open the matching profile card, follow, wait 10–30 seconds, then scroll. Daily cap 500 by default.
+- Binance: hover an author name, open the matching profile card, follow, wait 60–90 seconds, then scroll. Daily cap 400 by default (changed 2026-11-12).
 - Keep communication brief. User explicitly approved the debugger permission for real hover.
 
 ## Current implementation
@@ -37,7 +37,7 @@ Dependency-free Manifest V3 extension. Runtime code lives in extension/. Node de
 
 ## Important behavior
 
-Daily caps count attempts reserved BEFORE clicking; confirmed outcomes tracked separately. Counters reset at midnight Vietnam time. X defaults 400/day, 60–90 sec. Binance defaults 500/day, 10–30 sec. These are configured caps, not verified platform limits. Legacy userscript settings/counters are not migrated automatically. Disable legacy X Manager scripts while using this extension.
+Daily caps count attempts reserved BEFORE clicking; confirmed outcomes tracked separately. Counters reset at midnight Vietnam time. X defaults 400/day, 60–90 sec. Binance defaults 400/day, 60–90 sec. These are configured caps, not verified platform limits. Legacy userscript settings/counters are not migrated automatically. Disable legacy X Manager scripts while using this extension.
 
 Binance uses Chrome debugger browser input because dispatchEvent does not produce actual CSS hover. This does not move the Windows hardware cursor. Keep Binance source tab active; close its DevTools. Chrome shows its debugger notification. Stop, completion/errors, navigation and disconnect stop/detach the session. Rejects non-owner tabs, stale tokens, subframes, invalid coordinates and non-Square routes. Follow clicks currently use DOM button.click with outcome verification; actual browser input is used for hover.
 
