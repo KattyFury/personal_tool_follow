@@ -1,6 +1,6 @@
 # Handoff — Personal Follow
 
-Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.7.3.
+Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.7.4.
 
 ## Locations
 
@@ -20,7 +20,7 @@ Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.7.3.
 - X: adapted from the old X Manager userscripts (GitHub repo tool_personal_xmanager was DELETED 2026-11-11; the only copy is reference/xmanager/ here, do not delete it); Personal SF >10 filter and Standard option; four action modes and whitelist.
 - X Rest controls AND batch-rest behavior removed in 0.3.1. Whitelist has the freed space. Keep per-action delays.
 - Binance: hover an author name, open the matching profile card, follow, wait 60–90 seconds, then scroll. Daily cap 150 by default (lowered from 400 on 2026-11-12; background migrates a stored 400 to 150 once, flag binanceCap150).
-- Binance Follow back (0.6.0): Action select on the Binance card (feed | followback). followback runs only on /square/profile/<handle>/followers; each row [data-avatar] has its own Follow/Following button, clicked directly (no hover, no debugger: usesPointer is false). Scrolls the window to load more (20 per page). Selectors checked read-only on the live page 2026-11-12; no live follow made by Claude.
+- Binance Follow from list (0.6.0, widened 0.7.4; mode value still 'followback'): Action select on the Binance card (feed | followback). Since 0.7.4 it runs on ANY /square page that has [data-avatar] rows with a profile link and Follow/Following button (Followers, Following, /square/following 'Suggested to you', Who to follow); before, only /square/profile/<handle>/followers; each row [data-avatar] has its own Follow/Following button, clicked directly (no hover, no debugger: usesPointer is false). Scrolls the window to load more (20 per page). Selectors checked read-only on the live page 2026-11-12; no live follow made by Claude.
 - Keep communication brief. User explicitly approved the debugger permission for real hover.
 
 ## Current implementation
@@ -60,6 +60,8 @@ node scripts/check-binance-zoom.js
 Requires installed Google Chrome for browser checks. Last runs (0.4.0, 2026-11-11): npm test all passed, npm run check passed, 6/6 Playwright UI tests passed (1:2 ratio, fits 400x740, no overflow at 320-390px, yellow Start/segment/running chip). Browser hover proof and integrated CSS-hover-only fixture passed when introduced in 0.3.0. Fixtures use isolated Chrome and no live accounts.
 
 ## Recent commits
+
+- 0.7.4: Binance 'Follow back' renamed 'Follow from list' and no longer tied to the Followers URL (user request 2026-11-13). /square/following 'Suggested to you' checked read-only 2026-11-13: same [data-avatar] row + own Follow button as Followers (23 rows). No live follow made by Claude.
 
 - 0.7.3: the Settings toggle also picks the card: Binance shows only the Binance Square card, X only the X card (user request 2026-11-13). A hidden card keeps running.
 

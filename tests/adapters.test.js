@@ -191,7 +191,19 @@ test('Binance follow back clicks the Follow button of followers not yet followed
   assert.equal(await value.step(ctx), 'acted'); assert.equal(await value.step(ctx), 'acted'); assert.equal(await value.step(ctx), 'empty');
   assert.deepEqual(clicked, ['bob', 'carol']); dom.window.close();
   const feed = await adapter('content-binance.js', '', binanceURL);
-  await assert.rejects(feed.value.prepare({ settings }), /followers list/i); feed.dom.window.close();
+  await assert.rejects(feed.value.prepare({ settings }), /list of accounts/i); feed.dom.window.close();
+});
+test('Binance follow from list also runs on Following > Suggested to you, any Square page with account rows', async () => {
+  const { dom, value } = await adapter('content-binance.js', '<main>' + followerRow('dave', 'Follow') + followerRow('erin', 'Following') + '</main>', 'https://www.binance.com/en/square/following');
+  dom.window.scrollTo = () => {};
+  const settings = { mode: 'followback' }, clicked = [];
+  assert.equal(value.allowed(settings), true); assert.equal(value.allowed({ mode: 'feed' }), false);
+  await value.prepare({ settings });
+  const ctx = context({ settings, action: async (button, verify) => { clicked.push(button.closest('[data-avatar]').querySelector('.nick').textContent); button.querySelector('span').textContent = 'Following'; assert.equal(verify(), true); } });
+  assert.equal(await value.step(ctx), 'acted'); assert.equal(await value.step(ctx), 'empty');
+  assert.deepEqual(clicked, ['dave']); dom.window.close();
+  const other = await adapter('content-binance.js', '<main>' + followerRow('dave', 'Follow') + '</main>', 'https://www.binance.com/en/markets');
+  assert.equal(other.value.allowed(settings), false); other.dom.window.close();
 });
 
 const whoCell = (handle, sf, { round = true, gold = false } = {}) => `<div data-testid="UserCell"><div data-testid="UserAvatar-Container-${handle}"><a href="/${handle}"><div style="border-radius:${round ? '9999px' : '0px'}"></div></a></div><span class="signal-avatar-badge__value">${sf}</span><a href="/${handle}">${handle}</a>${gold ? '<svg data-testid="icon-verified"><linearGradient></linearGradient></svg>' : ''}<button data-testid="1-follow">Theo dõi</button></div>`;

@@ -3,9 +3,9 @@
   const isFollow = el => /^(?:\+\s*)?(?:follow|follow back|theo dõi|theo dõi lại)$/i.test(el.textContent.trim());
   const isFollowing = el => /^(following|đang theo dõi)$/i.test(el.textContent.trim());
   const feed = () => /^\/(?:[a-z]{2}(?:-[A-Za-z]{2})?\/)?square(?:\/|$)/.test(location.pathname) && !/\/(?:profile|creator|post|following|followers)(?:\/|$)/.test(location.pathname);
-  // Follow back runs on a Square followers list: /square/profile/<handle>/followers.
-  const followers = () => /^\/(?:[a-z]{2}(?:-[A-Za-z]{2})?\/)?square\/profile\/[^/]+\/followers\/?$/.test(location.pathname);
-  const allowed = settings => settings?.mode === 'followback' ? followers() : feed();
+  // Follow from list runs on any Square page that shows account rows: Followers, Following, Suggested to you, Who to follow.
+  const square = () => /^\/(?:[a-z]{2}(?:-[A-Za-z]{2})?\/)?square(?:\/|$)/.test(location.pathname);
+  const allowed = settings => settings?.mode === 'followback' ? square() : feed();
   const profile = link => {
     try { const url = new URL(link.getAttribute('href'), location.href); return url.hostname === location.hostname ? url.pathname.match(/\/square\/profile\/([^/]+)/)?.[1].toLowerCase() : null; } catch { return null; }
   };
@@ -99,9 +99,10 @@
       throw Error('Comment outcome is unclear. Stopped; check the post on the Binance tab. The comment remains counted.');
     } finally { if (composer()) await closeComposer(ctx).catch(() => {}); }
   }
-  // Follow back: each follower row ([data-avatar]) carries its own Follow / Following button. No hover needed.
+  // Follow from list: each account row ([data-avatar]) carries its own Follow / Following button. No hover needed.
+  const listRows = () => [...document.querySelectorAll('[data-avatar]')].filter(row => row.querySelector('a[href*="/square/profile/"]') && [...row.querySelectorAll('button, [role="button"]')].some(el => isFollow(el) || isFollowing(el)));
   async function followBack(ctx) {
-    for (const row of document.querySelectorAll('[data-avatar]')) {
+    for (const row of listRows()) {
       const link = row.querySelector('.nick-username a[href*="/square/profile/"], a[href*="/square/profile/"]');
       const account = link && profile(link);
       if (!account || ctx.seen.has(account)) continue;
@@ -113,12 +114,12 @@
       row.scrollIntoView({ block: 'center', behavior: 'instant' });
       await ctx.wait(600);
       if (!row.isConnected || !visible(button) || !isFollow(button)) continue;
-      await ctx.report('Following back ' + account + '…');
+      await ctx.report('Following ' + account + '…');
       await ctx.action(button, () => (button.isConnected && isFollowing(button)) || [...row.querySelectorAll('button, [role="button"]')].some(isFollowing));
       return 'acted';
     }
     ctx.check(); window.scrollTo({ top: document.documentElement.scrollHeight });
-    await ctx.report('Loading more followers…');
+    await ctx.report('Loading more accounts…');
     await ctx.wait(2000);
     return 'empty';
   }
@@ -130,7 +131,7 @@
     async prepare(ctx) {
       scrollNext = false; hoverFailures = 0; commentCapHit = false; commentTurn = Math.floor(Math.random() * 1000);
       if (ctx?.settings?.mode === 'followback') {
-        if (!followers()) throw Error('Open your Binance Square followers list (Profile > Followers).');
+        if (!square() || !listRows().length) throw Error('Open a Square page with a list of accounts: Followers, Following > Suggested to you, or Who to follow.');
         return;
       }
       if (!feed()) throw Error('Open the Binance Square feed, not a profile or post.');

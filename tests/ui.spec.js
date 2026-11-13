@@ -39,7 +39,7 @@ test('vertical layout supports settings and start/stop', async ({ page }) => {
   await page.getByRole('button', { name: 'Binance', exact: true }).click();
   await expect(page.locator('#dailyLimit')).toHaveValue('150');
   await page.locator('#binance-mode').selectOption('followback');
-  await expect(page.locator('#binance-status')).toContainText('Followers list');
+  await expect(page.locator('#binance-status')).toContainText('list of accounts');
   await expect(page.locator('#minDelay')).toHaveValue('60'); await expect(page.locator('#maxDelay')).toHaveValue('90');
   await page.locator('#dailyLimit').fill('450'); await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.locator('#binance-count')).toHaveText('0 / 450');

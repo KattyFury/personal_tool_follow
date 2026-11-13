@@ -57,7 +57,7 @@ function renderPlatform(p) {
   $(p + '-stop').disabled = !running;
   $(p + '-state').textContent = running ? 'Running' : run ? (run.status === 'Stopped' ? 'Stopped' : 'Check tab') : 'Ready';
   $(p + '-state').className = 'chip' + (running ? ' running' : run && run.status !== 'Stopped' ? ' attention' : '');
-  $(p + '-status').textContent = uiErrors[p] || run?.status || (p === 'x' ? ({ follow: 'Open your X followers list.', massfollow: 'Open x.com/i/connect_people (people only, SF > 10 if on) or the Home feed.' }[settings.x.mode] || 'Open your X Following list.') : settings.binance.mode === 'followback' ? 'Open your Square Followers list. Follows back everyone not followed yet.' : 'Open the Square feed. Follows visible feed accounts.');
+  $(p + '-status').textContent = uiErrors[p] || run?.status || (p === 'x' ? ({ follow: 'Open your X followers list.', massfollow: 'Open x.com/i/connect_people (people only, SF > 10 if on) or the Home feed.' }[settings.x.mode] || 'Open your X Following list.') : settings.binance.mode === 'followback' ? 'Open any Square list of accounts (Followers, Suggested to you, Who to follow). Follows everyone not followed yet.' : 'Open the Square feed. Follows visible feed accounts.');
   $(p + '-timer').textContent = run?.nextAt && running ? `${Math.max(0, Math.ceil((run.nextAt - Date.now()) / 1000))}s` : '';
 }
 async function refresh() {
