@@ -44,3 +44,14 @@ test('only X and Square routes are eligible', () => {
   assert.equal(platformFor('https://www.binance.com/vi/square/profile/123'), 'binance');
   for (const url of ['https://www.binance.com/en/trade/BTC_USDT', 'https://evil.com/square', 'http://x.com/home']) assert.equal(platformFor(url), null);
 });
+test('Binance comment settings default off and validate text and cap', () => {
+  assert.deepEqual([defaults.binance.comment, defaults.binance.commentText, defaults.binance.commentLimit], [false, 'Please follow me back', 30]);
+  assert.equal(validSettings('binance', { comment: true, commentText: '  Please   follow me back ' }).commentText, 'Please follow me back');
+  assert.throws(() => validSettings('binance', { comment: true, commentText: '   ' }), /comment text/i);
+  assert.throws(() => validSettings('binance', { commentText: 'x'.repeat(281) }), /280/);
+  assert.throws(() => validSettings('binance', { commentLimit: 0 }), /Comment cap/);
+});
+test('Binance comment settings keep one comment per line, at most 20', () => {
+  assert.equal(validSettings('binance', { comment: true, commentText: ' Hi  there \n\n Follow back pls \r\n' }).commentText, 'Hi there\nFollow back pls');
+  assert.throws(() => validSettings('binance', { commentText: Array(21).fill('a').join('\n') }), /at most 20/);
+});

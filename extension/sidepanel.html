@@ -11,7 +11,7 @@
     <header class="app-bar">
       <img class="app-icon" src="icons/people-32.png" alt="" width="28" height="28">
       <h1>Personal Follow</h1>
-      <span class="version">v0.6.1</span>
+      <span class="version">v0.7.2</span>
     </header>
 
     <div class="board">
@@ -48,6 +48,13 @@
             </div>
             <textarea id="whitelist" spellcheck="false" placeholder="@handle, @handle"></textarea>
           </div>
+          <div id="binance-comment" class="comment-field">
+            <label class="switch" title="Feed only. After a new follow, reply to that author's post with this text.">
+              <input type="checkbox" id="comment" role="switch"><span class="switch-track" aria-hidden="true"></span>Comment after follow · feed
+            </label>
+            <label class="field">Comments/day<input id="commentLimit" type="number" min="1" max="1000" step="1" required></label>
+            <label class="field">Comments · one per line, used in turn<textarea id="commentText" rows="4" spellcheck="false" placeholder="Please follow me back"></textarea></label>
+          </div>
           <p id="binance-note" class="settings-note">Feed: follows Square authors via hover cards. Follow back: follows everyone on your Followers list.</p>
           <p id="settings-error" class="error" role="alert"></p>
         </form>
@@ -63,7 +70,7 @@
           </div>
           <div class="metric">
             <strong id="binance-count">0 / 400</strong>
-            <p><span id="binance-confirmed">0</span> confirmed <span class="countdown" id="binance-timer"></span></p>
+            <p><span id="binance-confirmed">0</span> confirmed · <span id="binance-comments">0</span> comments <span class="countdown" id="binance-timer"></span></p>
           </div>
           <div class="meter" aria-hidden="true"><span id="binance-meter"></span></div>
           <label class="inline-field">Action<select id="binance-mode"><option value="feed">Follow from feed</option><option value="followback">Follow back</option></select></label>

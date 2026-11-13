@@ -210,3 +210,71 @@ test('X recognises the Vietnamese "xác nhận" verified label', async () => {
   await value.step(context({ settings: { mode: 'massfollow', personal: false, whitelist: '' }, hover: async () => { hovered = true; } }));
   assert.equal(hovered, true); dom.window.close();
 });
+
+// 0.7.0: comment after follow. Composer markup mirrors the live Square reply modal (checked read-only 2026-11-12).
+const feedCard = name => `<div class="card-content-box">${binanceHeader.replaceAll('killiankillua', name)}<div class="card__ft"><div class="comments-icon"><div class="cursor-pointer">2</div></div></div></div>`;
+function installComposer(dom, nick, { closesOnReply = true } = {}) {
+  const doc = dom.window.document;
+  doc.execCommand = (cmd, _ui, value) => { const ed = doc.activeElement; if (cmd === 'insertText') ed.textContent += value; if (cmd === 'delete') ed.textContent = ''; ed.dispatchEvent(new dom.window.Event('input', { bubbles: true })); return true; };
+  doc.querySelector('.comments-icon .cursor-pointer').addEventListener('click', () => {
+    const host = doc.createElement('div'); host.className = 'short-editor';
+    host.innerHTML = `<div class="short-editor-inner modal"><div><svg></svg></div><div class="nick">${nick}</div><div class="tiptap ProseMirror" contenteditable="true" role="textbox" tabindex="0"></div><button class="inactive">Reply</button></div>`;
+    const ed = host.querySelector('.ProseMirror'), reply = host.querySelector('button');
+    ed.addEventListener('input', () => reply.classList.toggle('inactive', !ed.textContent));
+    reply.addEventListener('click', () => { host.posted = ed.textContent; if (closesOnReply) host.remove(); });
+    host.querySelector('svg').addEventListener('click', () => host.remove());
+    doc.body.append(host); dom.window.lastComposer = host;
+  });
+}
+const commentSettings = { mode: 'feed', comment: true, commentText: 'Please follow me back', commentLimit: 30 };
+const followCtx = (dom, extra = {}) => context({ settings: commentSettings, hover: async () => { showProfile(dom); }, action: async (button, verify) => { button.textContent = 'Following'; assert.equal(verify(), true); }, ...extra });
+test('Binance comments on the followed author post after a new follow', async () => {
+  const { dom, value } = await adapter('content-binance.js', feedCard('killiankillua'), binanceURL);
+  installComposer(dom, 'Killian Killua');
+  const asked = [];
+  assert.equal(await value.step(followCtx(dom, { ask: async m => { asked.push(m.type); return { ok: true, day: 'd' }; } })), 'acted');
+  assert.equal(dom.window.lastComposer.posted, 'Please follow me back');
+  assert.deepEqual(asked, ['reserveComment', 'commentConfirmed']); dom.window.close();
+});
+test('Binance skips the comment when comments are off or the composer shows another author', async () => {
+  let { dom, value } = await adapter('content-binance.js', feedCard('killiankillua'), binanceURL);
+  installComposer(dom, 'Killian Killua');
+  assert.equal(await value.step(followCtx(dom, { settings: { ...commentSettings, comment: false }, ask: async () => { throw Error('no comment expected'); } })), 'acted');
+  assert.equal(dom.window.lastComposer, undefined); dom.window.close();
+  ({ dom, value } = await adapter('content-binance.js', feedCard('killiankillua'), binanceURL));
+  installComposer(dom, 'Someone Else');
+  assert.equal(await value.step(followCtx(dom, { ask: async () => { throw Error('no reservation expected'); } })), 'acted');
+  assert.equal(dom.window.lastComposer.posted, undefined); assert.equal(dom.window.lastComposer.isConnected, false); dom.window.close();
+});
+test('Binance keeps following without commenting once the comment cap is reached', async () => {
+  const { dom, value } = await adapter('content-binance.js', feedCard('killiankillua'), binanceURL);
+  installComposer(dom, 'Killian Killua');
+  const reports = [];
+  assert.equal(await value.step(followCtx(dom, { ask: async () => { throw Error('Daily cap reached.'); }, report: async s => reports.push(s) })), 'acted');
+  assert.equal(dom.window.lastComposer.posted, undefined); assert.equal(dom.window.lastComposer.isConnected, false);
+  assert.ok(reports.some(s => /comment cap/i.test(s))); dom.window.close();
+});
+test('Binance stops when a submitted comment does not clear', async () => {
+  const { dom, value } = await adapter('content-binance.js', feedCard('killiankillua'), binanceURL);
+  installComposer(dom, 'Killian Killua', { closesOnReply: false });
+  dom.window.document.querySelector('.comments-icon .cursor-pointer').addEventListener('click', () => { dom.window.lastComposer.querySelector('button').addEventListener('click', e => e.stopImmediatePropagation(), { capture: true }); });
+  await assert.rejects(value.step(followCtx(dom, { ask: async () => ({ ok: true, day: 'd' }) })), /Comment outcome is unclear/); dom.window.close();
+});
+test('Binance uses the comment lines in turn across follows', async () => {
+  const names = ['alice', 'bob', 'carol'];
+  const { dom, value } = await adapter('content-binance.js', names.map(feedCard).join(''), binanceURL);
+  const doc = dom.window.document, posted = [];
+  doc.execCommand = (cmd, _ui, v) => { const ed = doc.activeElement; if (cmd === 'insertText') ed.textContent += v; if (cmd === 'delete') ed.textContent = ''; ed.dispatchEvent(new dom.window.Event('input', { bubbles: true })); return true; };
+  doc.querySelectorAll('.card-content-box').forEach(box => box.querySelector('.comments-icon .cursor-pointer').addEventListener('click', () => {
+    const host = doc.createElement('div'); host.className = 'short-editor';
+    host.innerHTML = `<div class="short-editor-inner modal"><div><svg></svg></div><div class="nick">${box.querySelector('a.nick').textContent}</div><div class="ProseMirror" contenteditable="true" role="textbox"></div><button>Reply</button></div>`;
+    host.querySelector('button').addEventListener('click', () => { posted.push(host.querySelector('.ProseMirror').textContent); host.remove(); });
+    doc.body.append(host);
+  }));
+  dom.window.Math.random = () => 0;
+  const settings = { ...commentSettings, commentText: 'First\nSecond' };
+  await value.prepare({ settings });
+  const ctx = context({ settings, hover: async el => { const a = el.closest('.card-content-box').querySelector('a.nick'); showProfile(dom, a.getAttribute('href').split('/').pop()); }, action: async (button, verify) => { button.textContent = 'Following'; assert.equal(verify(), true); }, ask: async () => ({ ok: true, day: 'd' }) });
+  for (let i = 0; i < 3; i++) assert.equal(await value.step(ctx), 'acted');
+  assert.deepEqual(posted, ['First', 'Second', 'First']); dom.window.close();
+});

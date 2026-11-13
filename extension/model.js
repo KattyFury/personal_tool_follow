@@ -1,6 +1,6 @@
 export const defaults = {
   x: { dailyLimit: 400, minDelay: 60, maxDelay: 90, mode: 'follow', personal: true, whitelist: "arc, tempo, ritualnet, seismicsys, base, megaeth, metamask, kastxyz, degentokenbase, 01exchange, decibeltrade, linera_io, somnia_network, relayprotocol, jumperapp, prismaxai, axisrobotics, psdnai, nansen_ai, ethos_network, wallchain, forteprotocol, upshot_cards, megapot, spektergames, pixiechess, integra_layer, getoro_xyz, farcaster_xyz, bluesky, stormrae_ai, concretexyz, ezwalletapp, kucoincom, bybit_official, binanceangels, riverdotinc, river4fun, binance, bitget, arcium, bybitafrica, binancevip" },
-  binance: { dailyLimit: 150, minDelay: 60, maxDelay: 90, mode: 'feed' }
+  binance: { dailyLimit: 150, minDelay: 60, maxDelay: 90, mode: 'feed', comment: false, commentText: 'Please follow me back', commentLimit: 30 }
 };
 export const dayKey = (date = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
 export function validSettings(platform, value) {
@@ -9,7 +9,17 @@ export function validSettings(platform, value) {
   for (const key of ['dailyLimit', 'minDelay', 'maxDelay']) if (!Number.isFinite(result[key]) || result[key] < 1) throw Error('Enter positive numbers.');
   if (!Number.isInteger(result.dailyLimit) || result.dailyLimit > 10000) throw Error('Daily cap must be a whole number from 1 to 10,000.');
   if (result.minDelay > result.maxDelay || result.maxDelay > 86400) throw Error('Delay range is invalid.');
-  if (platform === 'binance' && !['feed', 'followback'].includes(result.mode)) throw Error('Choose a Binance mode.');
+  if (platform === 'binance') {
+    if (!['feed', 'followback'].includes(result.mode)) throw Error('Choose a Binance mode.');
+    result.comment = !!result.comment;
+    // One comment per line (0.7.1); the runner uses them in turn.
+    const lines = String(result.commentText ?? '').split(/\r?\n/).map(line => line.replace(/\s+/g, ' ').trim()).filter(Boolean);
+    if (result.comment && !lines.length) throw Error('Enter the comment text.');
+    if (lines.some(line => line.length > 280)) throw Error('Each comment must be 280 characters or fewer.');
+    if (lines.length > 20) throw Error('Enter at most 20 comments, one per line.');
+    result.commentText = lines.join('\n');
+    if (!Number.isInteger(result.commentLimit) || result.commentLimit < 1 || result.commentLimit > 1000) throw Error('Comment cap must be a whole number from 1 to 1,000.');
+  }
   if (platform === 'x') {
     if (!['follow', 'massfollow', 'unfollow', 'unfollow_topdown'].includes(result.mode)) throw Error('Choose an X mode.');
     delete result.restMin; delete result.restMax;

@@ -26,6 +26,8 @@ Adapted from [your X Manager](https://github.com/KattyFury/tool_personal_xmanage
 
 Open the Square feed and keep this tab active. Close DevTools on it before starting. The runner uses browser-level mouse input through Chrome debugger to hover a visible author name, waits for that author’s profile card, clicks Follow inside that card, waits the configured delay, then scrolls to the next accounts. Already-followed accounts are skipped. A missing hover card is retried three times (including the avatar/name wrapper), then that account is skipped without reserving a Follow attempt. Three consecutive accounts with missing cards stop the runner so it cannot scroll indefinitely. Page changes or unclear action outcomes still stop immediately.
 
+**Comment after follow** (feed only, off by default): after a new follow, the runner opens that post's comment box, types the next of your comments (one per line, up to 20, used in turn; default “Please follow me back”) and clicks Reply. It has its own daily cap (default 30); once reached, it keeps following without commenting. Repeated identical comments can be treated as spam by Binance.
+
 Defaults: **150 attempts/day**, random **60–90 seconds** between follows. Two actions: **Follow from feed** (hover cards, real pointer) and **Follow back** (open your Square Followers list; clicks Follow on every follower you do not follow yet, scrolling to load more; no debugger). The cap is your configured maximum, not an official Binance limit. Current live feed markup still needs validation; the adapter may find no eligible buttons if Binance changes its layout.
 
 ## How counts and settings work

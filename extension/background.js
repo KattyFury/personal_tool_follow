@@ -46,6 +46,19 @@ async function handle(message, sender) {
       await chrome.storage.local.set({ counts: state.counts });
       return { ok: true, count: state.counts[p].attempts, day: state.counts[p].day };
     }
+    // Feed comments (0.7.0) have their own daily cap, separate from follow attempts.
+    if (message.type === 'reserveComment') {
+      if (!run.running || p !== 'binance' || !run.settings.comment) throw Error('Comments are off.');
+      const state = await read();
+      state.counts.binanceComments = reserveCount(state.counts.binanceComments, run.settings.commentLimit);
+      await chrome.storage.local.set({ counts: state.counts });
+      return { ok: true, count: state.counts.binanceComments.attempts, day: state.counts.binanceComments.day };
+    }
+    if (message.type === 'commentConfirmed') {
+      const state = await read(), count = state.counts.binanceComments;
+      if (count && count.day === message.day) { count.confirmed = Math.min(count.attempts, (count.confirmed || 0) + 1); await chrome.storage.local.set({ counts: state.counts }); }
+      return { ok: true };
+    }
     if (message.type === 'confirmed') {
       const state = await read(), count = state.counts[p];
       if (count && count.day === message.day) { count.confirmed = Math.min(count.attempts, (count.confirmed || 0) + 1); await chrome.storage.local.set({ counts: state.counts }); }

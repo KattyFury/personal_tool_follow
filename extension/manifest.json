@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Personal Follow",
-  "version": "0.6.1",
+  "version": "0.7.2",
   "minimum_chrome_version": "114",
   "description": "One screen for your X and Binance Square follow tools.",
   "permissions": [

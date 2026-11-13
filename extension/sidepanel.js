@@ -13,6 +13,8 @@ function renderForm() {
   const values = settings[selected];
   for (const key of ['dailyLimit', 'minDelay', 'maxDelay', 'mode', 'whitelist']) if (values[key] !== undefined) $(key).value = values[key];
   $('personal').checked = settings.x.personal;
+  $('comment').checked = !!settings.binance.comment; $('commentText').value = settings.binance.commentText ?? ''; $('commentLimit').value = settings.binance.commentLimit ?? 30;
+  $('binance-comment').hidden = selected === 'x';
   $('x-settings').hidden = $('x-whitelist').hidden = selected !== 'x';
   $('binance-note').hidden = selected === 'x';
   for (const p of ['x', 'binance']) $('settings-' + p).setAttribute('aria-pressed', String(p === selected));
@@ -23,6 +25,7 @@ function collect() {
   const values = { ...settings[selected] };
   for (const key of ['dailyLimit', 'minDelay', 'maxDelay']) values[key] = Number($(key).value);
   if (selected === 'x') { values.mode = $('mode').value; values.personal = $('personal').checked; values.whitelist = $('whitelist').value; }
+  else { values.comment = $('comment').checked; values.commentText = $('commentText').value; values.commentLimit = Number($('commentLimit').value); }
   return validSettings(selected, values);
 }
 async function save() {
@@ -38,6 +41,7 @@ function renderPlatform(p) {
   $(p + '-meter').style.width = `${Math.min(100, (count.attempts / limit) * 100 || 0)}%`;
   document.querySelector(`.card[data-platform="${p}"]`).classList.toggle('is-running', running);
   $(p + '-confirmed').textContent = count.confirmed || 0;
+  if (p === 'binance') { const c = snapshot.counts.binanceComments; $('binance-comments').textContent = c?.day === snapshot.day ? c.confirmed || 0 : 0; }
   const tab = $(p + '-tab'), chosen = tab.value;
   const candidates = snapshot.tabs.filter(t => t.platform === p);
   const entries = candidates.map(t => [String(t.id), t.title || t.url]);

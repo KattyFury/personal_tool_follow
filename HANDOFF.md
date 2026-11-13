@@ -1,6 +1,6 @@
 # Handoff — Personal Follow
 
-Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.6.1.
+Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.7.2.
 
 ## Locations
 
@@ -60,6 +60,12 @@ node scripts/check-binance-zoom.js
 Requires installed Google Chrome for browser checks. Last runs (0.4.0, 2026-11-11): npm test all passed, npm run check passed, 6/6 Playwright UI tests passed (1:2 ratio, fits 400x740, no overflow at 320-390px, yellow Start/segment/running chip). Browser hover proof and integrated CSS-hover-only fixture passed when introduced in 0.3.0. Fixtures use isolated Chrome and no live accounts.
 
 ## Recent commits
+
+- 0.7.2: comment outcome (posted text or skip reason) stays in the status line during the wait ('Waiting for the next action · …'); before, skip reasons were overwritten at once. User reported 0.7.1 followed but never commented; cause not yet known.
+
+- 0.7.1: Comment text holds up to 20 comments, one per line (textarea); the runner uses them in turn, starting at a random line each run, advancing only after a posted comment.
+
+- 0.7.0: Binance feed 'Comment after follow' (off by default): after a NEW follow, opens the post's .comments-icon composer (.short-editor-inner.modal, tiptap ProseMirror), checks the composer's .nick matches the author, types commentText via execCommand insertText, clicks Reply. Own daily cap (commentLimit, default 30, counts.binanceComments); at the cap it keeps following without comments. Composer markup checked read-only on the live page 2026-11-12 (typed then cleared, nothing posted). Success = composer closes or editor empties: NOT yet confirmed by a live post.
 
 - 0.6.1: X Mass follow also runs on x.com/i/connect_people (Who to follow; user's main target): direct click on each UserCell Follow button, no hover; people only (round avatar, no gold check: X gives organisations square avatars) + SF > 10 when the Kaito switch is on. Also recognises the Vietnamese 'Tài khoản đã xác nhận' verified label. Filter checked read-only on the live page 2026-11-12. Limitation: projects using a round avatar and blue check still pass the people filter. Home hover was confirmed working live (card appears); Home mostly shows already-followed accounts, so it skips them.
 

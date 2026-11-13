@@ -44,7 +44,61 @@
     }
     return null;
   }
-  let scrollNext = false, hoverFailures = 0;
+  let scrollNext = false, hoverFailures = 0, commentCapHit = false, commentTurn = 0;
+  // Comment after follow (0.7.0). Live markup checked read-only 2026-11-12: the card's .comments-icon opens a
+  // reply composer (.short-editor-inner.modal) on the same page with a tiptap/ProseMirror editor and a Reply button
+  // (class "inactive" while empty). The close X is the first child of the composer. Nothing was posted while checking.
+  const norm = value => String(value || '').normalize('NFKC').replace(/\s+/g, ' ').trim().toLowerCase();
+  const composer = () => [...document.querySelectorAll('.short-editor-inner.modal')].find(visible);
+  async function closeComposer(ctx) {
+    const inner = composer(); if (!inner) return;
+    const editor = inner.querySelector('[contenteditable="true"]');
+    if (editor && norm(editor.textContent)) { editor.focus(); document.execCommand('selectAll'); document.execCommand('delete'); }
+    const close = inner.firstElementChild?.querySelector('svg') || inner.firstElementChild;
+    close?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    for (let i = 0; i < 8 && composer(); i++) await ctx.wait(250);
+  }
+  const say = (ctx, text) => { ctx.note?.(text); return ctx.report(text); };
+  async function commentOn(ctx, link, account) {
+    if (commentCapHit) return;
+    // Comments are used in turn (one per line), starting at a random line each run.
+    const lines = String(ctx.settings.commentText || '').split('\n').map(line => line.trim()).filter(Boolean);
+    if (!lines.length) return;
+    const text = lines[commentTurn % lines.length];
+    const icon = link.closest('.card-content-box')?.querySelector('.comments-icon .cursor-pointer') || link.closest('.card-content-box')?.querySelector('.comments-icon');
+    if (!icon || !visible(icon)) { await say(ctx, 'Followed ' + account + '; no comment button on this post.'); return; }
+    await ctx.unhover().catch(() => {});
+    ctx.check(); icon.click();
+    let inner; for (let i = 0; i < 20 && !(inner = composer()); i++) await ctx.wait(250);
+    if (!inner) { await say(ctx, 'Followed ' + account + '; comment box did not open, comment skipped.'); return; }
+    try {
+      const nick = inner.querySelector('.nick');
+      if (nick && norm(nick.textContent) !== norm(link.textContent)) { await say(ctx, 'Comment box shows another post; comment skipped for ' + account + '.'); return; }
+      const editor = inner.querySelector('.ProseMirror[contenteditable="true"], [contenteditable="true"][role="textbox"]');
+      const host = inner.closest('.short-editor') || inner;
+      const reply = () => [...host.querySelectorAll('button')].find(b => visible(b) && /^(reply|trả lời|phản hồi)$/i.test(b.textContent.trim()));
+      if (!editor || !reply()) { await say(ctx, 'Comment box layout changed; comment skipped for ' + account + '.'); return; }
+      editor.focus(); document.execCommand('insertText', false, text);
+      await ctx.wait(500);
+      const button = reply();
+      if (norm(editor.textContent) !== norm(text) || !button || button.disabled || button.classList.contains('inactive')) { await say(ctx, 'Could not type the comment; skipped for ' + account + '.'); return; }
+      let reservation;
+      try { reservation = await ctx.ask({ type: 'reserveComment' }); }
+      catch (error) { if (/cap/i.test(error.message)) { commentCapHit = true; await say(ctx, 'Comment cap reached; following only from now on.'); return; } throw error; }
+      ctx.check(); button.click();
+      for (let i = 0; i < 32; i++) {
+        await ctx.wait(250);
+        const open = composer();
+        if (!open || !norm(open.querySelector('[contenteditable="true"]')?.textContent)) {
+          commentTurn++;
+          await ctx.ask({ type: 'commentConfirmed', day: reservation.day }).catch(() => {});
+          await say(ctx, 'Commented: “' + text + '”');
+          return;
+        }
+      }
+      throw Error('Comment outcome is unclear. Stopped; check the post on the Binance tab. The comment remains counted.');
+    } finally { if (composer()) await closeComposer(ctx).catch(() => {}); }
+  }
   // Follow back: each follower row ([data-avatar]) carries its own Follow / Following button. No hover needed.
   async function followBack(ctx) {
     for (const row of document.querySelectorAll('[data-avatar]')) {
@@ -74,7 +128,7 @@
   PersonalFollow.register({
     id: 'binance', allowed,
     async prepare(ctx) {
-      scrollNext = false; hoverFailures = 0;
+      scrollNext = false; hoverFailures = 0; commentCapHit = false; commentTurn = Math.floor(Math.random() * 1000);
       if (ctx?.settings?.mode === 'followback') {
         if (!followers()) throw Error('Open your Binance Square followers list (Profile > Followers).');
         return;
@@ -126,6 +180,7 @@
             const current = findProfileCard(account, link);
             return !!current?.following || (target.button.isConnected && isFollowing(target.button));
           });
+          if (ctx.settings.comment) await commentOn(ctx, link, account);
           scrollNext = true;
           return 'acted';
         } finally { await ctx.unhover().catch(() => {}); }

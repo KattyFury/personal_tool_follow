@@ -52,6 +52,11 @@ fieldset { padding: 0; margin: 0; border: 0; min-width: 0; }
 .range label { flex: 1; min-width: 0; }
 .range-dash { color: var(--ds-color-grey); }
 .settings-note { align-self: start; }
+.comment-field { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,2fr); gap: var(--ds-space-4) var(--ds-space-12); }
+.comment-field .switch { grid-column: 1 / -1; }
+.comment-field { align-items: start; }
+#commentText { min-height: 72px; resize: vertical; }
+.comment-field[hidden] { display: none; }
 .error { color: var(--ds-color-ink); font-weight: 600; }
 .error:empty { display: none; }
 
