@@ -17,7 +17,7 @@ function renderForm() {
   $('binance-comment').hidden = selected === 'x';
   $('x-settings').hidden = $('x-whitelist').hidden = selected !== 'x';
   $('binance-note').hidden = selected === 'x';
-  for (const p of ['x', 'binance']) $('settings-' + p).setAttribute('aria-pressed', String(p === selected));
+  for (const p of ['x', 'binance']) { $('settings-' + p).setAttribute('aria-pressed', String(p === selected)); document.querySelector(`.card[data-platform="${p}"]`).hidden = p !== selected; }
   setSaved(true); $('settings-error').textContent = ''; dirty = false;
 }
 function setSaved(saved) { $('save-state').textContent = saved ? 'Saved' : 'Unsaved'; $('save-state').classList.toggle('unsaved', !saved); }

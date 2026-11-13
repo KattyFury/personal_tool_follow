@@ -97,7 +97,8 @@ for (const height of [560, 440, 360]) test(`short panel ${height}px scrolls inst
     await page.getByRole('button', { name: platform, exact: true }).click();
     const clipped = await page.locator('.settings, .card').evaluateAll(els => els.filter(el => !el.hidden && el.scrollHeight > el.clientHeight + 1).map(el => el.className || el.id));
     expect(clipped).toEqual([]);
-    const boxes = await page.locator('.settings, .card, .future').evaluateAll(els => els.map(el => el.getBoundingClientRect()).map(r => [r.top, r.bottom]));
+    await expect(page.locator('.card:not([hidden])')).toHaveCount(1); await expect(page.locator(`.card[data-platform="${platform.toLowerCase()}"]`)).toBeVisible();
+    const boxes = await page.locator('.settings, .card, .future').evaluateAll(els => els.filter(el => !el.hidden).map(el => el.getBoundingClientRect()).map(r => [r.top, r.bottom]));
     for (let i = 1; i < boxes.length; i++) expect(boxes[i][0]).toBeGreaterThanOrEqual(boxes[i - 1][1]);
     if (platform === 'X') expect((await page.locator('#whitelist').boundingBox()).height).toBeGreaterThanOrEqual(48);
   }

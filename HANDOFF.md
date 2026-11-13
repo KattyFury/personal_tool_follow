@@ -1,6 +1,6 @@
 # Handoff — Personal Follow
 
-Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.7.2.
+Date: 2026-11-11 (Asia/Ho_Chi_Minh). Current version: 0.7.3.
 
 ## Locations
 
@@ -60,6 +60,8 @@ node scripts/check-binance-zoom.js
 Requires installed Google Chrome for browser checks. Last runs (0.4.0, 2026-11-11): npm test all passed, npm run check passed, 6/6 Playwright UI tests passed (1:2 ratio, fits 400x740, no overflow at 320-390px, yellow Start/segment/running chip). Browser hover proof and integrated CSS-hover-only fixture passed when introduced in 0.3.0. Fixtures use isolated Chrome and no live accounts.
 
 ## Recent commits
+
+- 0.7.3: the Settings toggle also picks the card: Binance shows only the Binance Square card, X only the X card (user request 2026-11-13). A hidden card keeps running.
 
 - 0.7.2: comment outcome (posted text or skip reason) stays in the status line during the wait ('Waiting for the next action · …'); before, skip reasons were overwritten at once. User reported 0.7.1 followed but never commented; cause not yet known.
 
